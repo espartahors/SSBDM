@@ -1,0 +1,98 @@
+{% extends "maintenance/base.html" %}
+{% load maintenance_extras %}
+
+{% block title %}{{ document.title }} - Steel Factory Maintenance System{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'maintenance:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'maintenance:document_list' %}">Documents</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ document.title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas {% if document.document_type == 'manual' %}fa-file-pdf text-danger{% elif document.document_type == 'drawing' %}fa-file-image text-primary{% elif document.document_type == 'certificate' %}fa-certificate text-warning{% else %}fa-file text-secondary{% endif %} me-2"></i>
+                        {{ document.title }}
+                    </h5>
+                    <span class="badge {% if document.document_type == 'manual' %}bg-danger{% elif document.document_type == 'drawing' %}bg-primary{% elif document.document_type == 'certificate' %}bg-warning{% elif document.document_type == 'procedure' %}bg-info{% else %}bg-secondary{% endif %}">
+                        {{ document.get_document_type_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p>{{ document.description|default:"No description provided."|linebreaks }}</p>
+                    
+                    <div class="text-center py-4">
+                        {% if document.document_type == 'drawing' or document.file.url|lower|endswith:".jpg" or document.file.url|lower|endswith:".jpeg" or document.file.url|lower|endswith:".png" %}
+                            <img src="{{ document.file.url }}" alt="{{ document.title }}" class="img-fluid border">
+                        {% else %}
+                            <div class="p-5 bg-light border text-center">
+                                <i class="fas {% if document.document_type == 'manual' %}fa-file-pdf text-danger{% elif document.document_type == 'certificate' %}fa-certificate text-warning{% else %}fa-file text-secondary{% endif %} fa-5x mb-3"></i>
+                                <h5>{{ document.filename }}</h5>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-3 text-center">
+                        <a href="{{ document.file.url }}" class="btn btn-primary" target="_blank">
+                            <i class="fas fa-eye me-2"></i> View Document
+                        </a>
+                        <a href="{{ document.file.url }}" class="btn btn-outline-primary ms-2" download>
+                            <i class="fas fa-download me-2"></i> Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Document Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <th width="40%">Equipment:</th>
+                                <td>
+                                    <a href="{% url 'maintenance:equipment_detail' document.equipment.id %}">
+                                        {{ document.equipment.code }} ({{ document.equipment.name }})
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Upload Date:</th>
+                                <td>{{ document.upload_date|date:"F j, Y" }}</td>
+                            </tr>
+                            <tr>
+                                <th>File Type:</th>
+                                <td>{{ document.filename|get_file_extension|upper }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{% url 'maintenance:document_update' document.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-2"></i> Edit Document
+                        </a>
+                        <a href="{% url 'maintenance:document_delete' document.id %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash me-2"></i> Delete Document
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

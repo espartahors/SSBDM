@@ -1,0 +1,173 @@
+
+{% extends "maintenance/base.html" %}
+{% load maintenance_extras %}
+
+{% block title %}{{ area.code }}: {{ area.name }} - Steel Factory Maintenance System{% endblock %}
+
+{% block content %}
+<div class="container-fluid pt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="fas fa-building me-2"></i>{{ area.code }}: {{ area.name }}</h2>
+                <div>
+                    <a href="{% url 'maintenance:area_update' area.id %}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'maintenance:area_delete' area.id %}" class="btn btn-outline-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Area Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <th width="30%">Code:</th>
+                                <td>{{ area.code }}</td>
+                            </tr>
+                            <tr>
+                                <th>Name:</th>
+                                <td>{{ area.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Parent Area:</th>
+                                <td>
+                                    {% if area.parent %}
+                                    <a href="{% url 'maintenance:area_detail' area.parent.id %}">
+                                        {{ area.parent.code }} - {{ area.parent.name }}
+                                    </a>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Description:</th>
+                                <td>{{ area.description|default:"-"|linebreaks }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-sitemap me-2"></i>Subareas</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for subarea in area.get_children %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="{% url 'maintenance:area_detail' subarea.id %}">
+                                {{ subarea.code }} - {{ subarea.name }}
+                            </a>
+                            <span class="badge bg-primary rounded-pill">{{ subarea.equipment.count }}</span>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center">No subareas found.</li>
+                        {% endfor %}
+                    </ul>
+                    <div class="mt-3">
+                        <a href="{% url 'maintenance:area_create' %}?parent={{ area.id }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-plus"></i> Add Subarea
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="fas fa-cogs me-2"></i>Equipment in this Area</h5>
+                    <a href="{% url 'maintenance:equipment_create' %}?area={{ area.id }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus"></i> Add Equipment
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for equipment in area.equipment.all %}
+                                <tr>
+                                    <td>{{ equipment.code }}</td>
+                                    <td>{{ equipment.name }}</td>
+                                    <td>{{ equipment.equipment_type }}</td>
+                                    <td>
+                                        <span class="badge {% if equipment.status == 'operational' %}bg-success{% elif equipment.status == 'maintenance' %}bg-warning{% elif equipment.status == 'breakdown' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ equipment.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'maintenance:equipment_detail' equipment.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No equipment found in this area.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-chart-bar me-2"></i>Area Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h3 class="mb-0">{{ area.equipment.count }}</h3>
+                                    <p class="text-muted mb-0">Total Equipment</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h3 class="mb-0">{{ area.equipment.all|length }}</h3>
+                                    <p class="text-muted mb-0">Operational</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h3 class="mb-0">{{ area.get_children.count }}</h3>
+                                    <p class="text-muted mb-0">Subareas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

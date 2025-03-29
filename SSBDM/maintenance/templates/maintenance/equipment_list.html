@@ -1,0 +1,105 @@
+{% extends "maintenance/base.html" %}
+
+{% block title %}Equipment List - Steel Factory Maintenance System{% endblock %}
+
+{% block content %}
+<div class="container-fluid pt-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-cogs me-2"></i>Equipment List</h2>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <a href="{% url 'maintenance:equipment_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Add New Equipment
+            </a>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-light">
+            <div class="row">
+                <div class="col-md-8">
+                    <form method="get" class="d-flex">
+                        {{ search_form.search.label_tag }}
+                        <div class="input-group">
+                            {{ search_form.search }}
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-filter me-1"></i> Filter
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                            <li><h6 class="dropdown-header">Status</h6></li>
+                            <li><a class="dropdown-item" href="?status=operational">Operational</a></li>
+                            <li><a class="dropdown-item" href="?status=maintenance">Under Maintenance</a></li>
+                            <li><a class="dropdown-item" href="?status=breakdown">Breakdown</a></li>
+                            <li><a class="dropdown-item" href="?status=inactive">Inactive</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Areas</h6></li>
+                            {% for area in areas %}
+                            <li><a class="dropdown-item" href="?area={{ area.id }}">{{ area.code }} - {{ area.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Area</th>
+                            <th>Status</th>
+                            <th>Last Maintenance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for equipment in equipment_list %}
+                        <tr>
+                            <td>{{ equipment.code }}</td>
+                            <td>{{ equipment.name }}</td>
+                            <td>{{ equipment.equipment_type }}</td>
+                            <td>{{ equipment.area.code }}</td>
+                            <td>
+                                <span class="badge {% if equipment.status == 'operational' %}bg-success{% elif equipment.status == 'maintenance' %}bg-warning{% elif equipment.status == 'breakdown' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                    {{ equipment.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ equipment.last_maintenance_date|date:"Y-m-d"|default:"-" }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'maintenance:equipment_detail' equipment.id %}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'maintenance:equipment_update' equipment.id %}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'maintenance:equipment_delete' equipment.id %}" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No equipment found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

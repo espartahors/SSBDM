@@ -1,0 +1,66 @@
+{% extends "maintenance/base.html" %}
+
+{% block title %}Delete Document: {{ document.title }} - Steel Factory Maintenance System{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'maintenance:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'maintenance:document_list' %}">Documents</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Delete Document</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Are you sure you want to delete the following document?</p>
+                    
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item"><strong>Title:</strong> {{ document.title }}</li>
+                        <li class="list-group-item">
+                            <strong>Type:</strong>
+                            <span class="badge {% if document.document_type == 'manual' %}bg-danger{% elif document.document_type == 'drawing' %}bg-primary{% elif document.document_type == 'certificate' %}bg-warning{% elif document.document_type == 'procedure' %}bg-info{% else %}bg-secondary{% endif %}">
+                                {{ document.get_document_type_display }}
+                            </span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Equipment:</strong>
+                            <a href="{% url 'maintenance:equipment_detail' document.equipment.id %}">
+                                {{ document.equipment.code }} - {{ document.equipment.name }}
+                            </a>
+                        </li>
+                        <li class="list-group-item"><strong>File:</strong> {{ document.filename }}</li>
+                    </ul>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>Warning:</strong> This will permanently delete this document from the system. This action cannot be undone.
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'maintenance:document_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i> Confirm Delete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

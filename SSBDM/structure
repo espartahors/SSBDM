@@ -1,0 +1,29 @@
+steel_factory_maintenance/
+├── manage.py
+├── steel_factory_maintenance/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   └── wsgi.py
+├── maintenance/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── urls.py
+│   ├── views.py
+│   ├── templates/
+│   │   └── maintenance/
+│   │       ├── base.html
+│   │       ├── dashboard.html
+│   │       ├── equipment_detail.html
+│   │       ├── component_detail.html
+│   │       └── ...
+│   └── static/
+│       ├── css/
+│       ├── js/
+│       └── ...
+├── media/
+└── static/

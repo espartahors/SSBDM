@@ -1,0 +1,86 @@
+{% extends "maintenance/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if form.instance.pk %}
+    Edit Spare Part: {{ form.instance.part_number }}
+    {% else %}
+    Add New Spare Part
+    {% endif %} - Steel Factory Maintenance System
+{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'maintenance:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'maintenance:spare_part_list' %}">Spare Parts</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        {% if form.instance.pk %}Edit Spare Part{% else %}Add Spare Part{% endif %}
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-{% if form.instance.pk %}edit{% else %}plus{% endif %} me-2"></i>
+                        {% if form.instance.pk %}
+                        Edit Spare Part: {{ form.instance.part_number }}
+                        {% else %}
+                        Add New Spare Part
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.part_number|as_crispy_field }}
+                                {{ form.description|as_crispy_field }}
+                                {{ form.quantity_in_stock|as_crispy_field }}
+                                {{ form.minimum_stock|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.cost|as_crispy_field }}
+                                {{ form.location|as_crispy_field }}
+                                {{ form.supplier|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Associated Equipment</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        {{ form.equipment|as_crispy_field }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 d-flex justify-content-between">
+                            <a href="{% url 'maintenance:spare_part_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Save Spare Part
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

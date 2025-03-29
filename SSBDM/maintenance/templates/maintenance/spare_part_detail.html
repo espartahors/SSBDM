@@ -1,0 +1,207 @@
+{% extends "maintenance/base.html" %}
+{% load maintenance_extras %}
+
+
+{% block title %}{{ spare_part.part_number }} - Steel Factory Maintenance System{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'maintenance:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'maintenance:spare_part_list' %}">Spare Parts</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ spare_part.part_number }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    {% if spare_part.quantity_in_stock == 0 %}
+                    <span class="badge bg-danger me-2">Out of Stock</span>
+                    {% elif spare_part.quantity_in_stock < spare_part.minimum_stock %}
+                    <span class="badge bg-warning me-2">Low Stock</span>
+                    {% else %}
+                    <span class="badge bg-success me-2">In Stock</span>
+                    {% endif %}
+                    {{ spare_part.part_number }}
+                </h2>
+                <div>
+                    <a href="{% url 'maintenance:spare_part_update' spare_part.id %}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'maintenance:spare_part_delete' spare_part.id %}" class="btn btn-outline-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Part Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <th width="30%">Part Number:</th>
+                                <td>{{ spare_part.part_number }}</td>
+                            </tr>
+                            <tr>
+                                <th>Description:</th>
+                                <td>{{ spare_part.description }}</td>
+                            </tr>
+                            <tr>
+                                <th>Quantity in Stock:</th>
+                                <td>
+                                    <span class="badge {% if spare_part.quantity_in_stock == 0 %}bg-danger{% elif spare_part.quantity_in_stock < spare_part.minimum_stock %}bg-warning{% else %}bg-success{% endif %}">
+                                        {{ spare_part.quantity_in_stock }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Minimum Stock:</th>
+                                <td>{{ spare_part.minimum_stock }}</td>
+                            </tr>
+                            <tr>
+                                <th>Cost:</th>
+                                <td>{% if spare_part.cost %}${{ spare_part.cost }}{% else %}-{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <th>Location:</th>
+                                <td>{{ spare_part.location|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Supplier:</th>
+                                <td>{{ spare_part.supplier|default:"-" }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-chart-bar me-2"></i>Stock Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col">
+                            <h4>Current Stock</h4>
+                            <div class="display-4">{{ spare_part.quantity_in_stock }}</div>
+                        </div>
+                        <div class="col">
+                            <h4>Minimum Stock</h4>
+                            <div class="display-4">{{ spare_part.minimum_stock }}</div>
+                        </div>
+                    </div>
+                    
+                {% with spare_part.quantity_in_stock|divisibleby:spare_part.minimum_stock|yesno:"100,0" as stock_percentage %}
+                <div class="progress-bar 
+                {% if spare_part.quantity_in_stock == 0 %}bg-danger
+                {% elif spare_part.quantity_in_stock < spare_part.minimum_stock %}bg-warning
+                {% else %}bg-success{% endif %}" 
+                role="progressbar" 
+                style="width: {{ stock_percentage }}%;">
+                </div>
+                {% endwith %}
+                    
+                    {% if spare_part.quantity_in_stock < spare_part.minimum_stock %}
+                    <div class="alert alert-warning mt-4">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Low Stock Warning:</strong> Current stock is below the minimum level.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-cogs me-2"></i>Used in Equipment</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for equipment in spare_part.equipment.all %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'maintenance:equipment_detail' equipment.id %}">
+                                            {{ equipment.code }}
+                                        </a>
+                                    </td>
+                                    <td>{{ equipment.name }}</td>
+                                    <td>{{ equipment.equipment_type }}</td>
+                                    <td>
+                                        <span class="badge {% if equipment.status == 'operational' %}bg-success{% elif equipment.status == 'maintenance' %}bg-warning{% elif equipment.status == 'breakdown' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ equipment.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">This part is not associated with any equipment.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-shopping-cart me-2"></i>Order Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert {% if spare_part.quantity_in_stock == 0 %}alert-danger{% elif spare_part.quantity_in_stock < spare_part.minimum_stock %}alert-warning{% else %}alert-success{% endif %}">
+                        {% if spare_part.quantity_in_stock == 0 %}
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>Out of Stock:</strong> Order immediately.
+                        {% elif spare_part.quantity_in_stock < spare_part.minimum_stock %}
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Low Stock:</strong> Consider ordering soon.
+                        {% else %}
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Adequate Stock:</strong> No action needed.
+                        {% endif %}
+                    </div>
+                    
+                    {% if spare_part.supplier %}
+                    <h6 class="mt-3">Supplier Information</h6>
+                    <p>{{ spare_part.supplier }}</p>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Update Stock Level
+                        </button>
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-shopping-cart me-2"></i>Generate Purchase Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "maintenance/base.html" %}
+
+{% block title %}Maintenance Log: {{ log.title }} - Steel Factory Maintenance System{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'maintenance:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'maintenance:maintenance_log_list' %}">Maintenance Logs</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ log.title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <span class="badge bg-{% if log.maintenance_type == 'preventive' %}info{% elif log.maintenance_type == 'corrective' %}warning{% elif log.maintenance_type == 'emergency' %}danger{% else %}secondary{% endif %} me-2">
+                        {{ log.get_maintenance_type_display }}
+                    </span>
+                    {{ log.title }}
+                </h2>
+                <div>
+                    <a href="{% url 'maintenance:maintenance_log_update' log.id %}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'maintenance:maintenance_log_delete' log.id %}" class="btn btn-outline-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Maintenance Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Equipment</h6>
+                            <p>
+                                <a href="{% url 'maintenance:equipment_detail' log.equipment.id %}">
+                                    {{ log.equipment.code }} - {{ log.equipment.name }}
+                                </a>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Date</h6>
+                            <p>{{ log.date|date:"F j, Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <h6>Description</h6>
+                    <div class="mb-4">
+                        {{ log.description|linebreaks }}
+                    </div>
+                    
+                    <h6>Findings</h6>
+                    <div>
+                        {{ log.findings|default:"No findings recorded"|linebreaks }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Log Information</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Duration:</span>
+                            <strong>{{ log.duration }} hours</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Created:</span>
+                            <strong>{{ log.created_at|date:"Y-m-d H:i" }}</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-users me-2"></i>Technicians</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for tech in log.technicians.all %}
+                        <li class="list-group-item">
+                            <i class="fas fa-user me-2"></i> {{ tech.get_full_name|default:tech.username }}
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center">No technicians assigned.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

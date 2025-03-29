@@ -1,0 +1,303 @@
+
+{% extends "maintenance/base.html" %}
+{% load maintenance_extras %}
+{% load static %}
+
+{% block title %}{{ equipment.code }}: {{ equipment.name }} - Steel Factory Maintenance System{% endblock %}
+
+{% block content %}
+<div class="row g-0">
+    <!-- Left Sidebar with Equipment Tree -->
+    <div class="col-md-4 col-lg-3 sidebar bg-light p-3">
+        <div class="search-box mb-3">
+            <input type="text" class="form-control" id="equipmentSearch" placeholder="Search equipment...">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">Equipment Hierarchy</h5>
+            <a href="{% url 'maintenance:area_create' %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-plus"></i> Add
+            </a>
+        </div>
+        
+        <div class="equipment-tree">
+            <div id="jstree"></div>
+        </div>
+    </div>
+
+    <!-- Right Content Area -->
+    <div class="col-md-8 col-lg-9 content p-4">
+        <div id="equipment-detail">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 id="selected-title">{{ equipment.code }}: {{ equipment.name }}</h3>
+                <div>
+                    <a href="{% url 'maintenance:equipment_update' equipment.id %}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'maintenance:equipment_delete' equipment.id %}" class="btn btn-outline-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card mb-4 equipment-card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Equipment Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th width="30%">Code:</th>
+                                        <td>{{ equipment.code }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Type:</th>
+                                        <td>{{ equipment.equipment_type }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Manufacturer:</th>
+                                        <td>{{ equipment.manufacturer|default:"--" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Model:</th>
+                                        <td>{{ equipment.model|default:"--" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Serial Number:</th>
+                                        <td>{{ equipment.serial_number|default:"--" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Installation Date:</th>
+                                        <td>{{ equipment.installation_date|date:"Y-m-d"|default:"--" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Last Maintenance:</th>
+                                        <td>{{ equipment.last_maintenance_date|date:"Y-m-d"|default:"--" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Status:</th>
+                                        <td>
+                                            <span class="badge {% if equipment.status == 'operational' %}bg-success{% elif equipment.status == 'maintenance' %}bg-warning{% elif equipment.status == 'breakdown' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                {{ equipment.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Parent:</th>
+                                        <td>
+                                            {% if equipment.parent %}
+                                            <a href="{% url 'maintenance:equipment_detail' equipment.parent.id %}">
+                                                {{ equipment.parent.code }} ({{ equipment.parent.name }})
+                                            </a>
+                                            {% else %}
+                                            --
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0"><i class="fas fa-cogs me-2"></i>Technical Specifications</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tbody>
+                                    {% if tech_specs %}
+                                        {% for key, value in tech_specs.items %}
+                                        <tr>
+                                            <th width="40%">{{ key|title|replace_underscore }}</th>
+                                            <td>{{ value }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="2" class="text-center">No technical specifications available.</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0"><i class="fas fa-tools me-2"></i>Maintenance History</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                {% for log in maintenance_logs %}
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="badge bg-{% if log.maintenance_type == 'preventive' %}info{% elif log.maintenance_type == 'corrective' %}warning{% elif log.maintenance_type == 'emergency' %}danger{% else %}secondary{% endif %}">
+                                            {{ log.get_maintenance_type_display }}
+                                        </span>
+                                        <small>{{ log.date|date:"Y-m-d" }}</small>
+                                    </div>
+                                    <div class="mt-1">{{ log.title }}</div>
+                                    <small class="text-muted">Technician: {{ log.technicians.first.username|default:"Not specified" }}</small>
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item">No maintenance history found.</li>
+                                {% endfor %}
+                            </ul>
+                            <div class="mt-3">
+                                <a href="{% url 'maintenance:maintenance_log_create' %}?equipment={{ equipment.id }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-plus"></i> Add Maintenance Log
+                                </a>
+                                <a href="{% url 'maintenance:maintenance_log_list' %}" class="btn btn-sm btn-outline-secondary ms-2">
+                                    <i class="fas fa-history"></i> View Full History
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0"><i class="fas fa-boxes me-2"></i>Components</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Name</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for component in components %}
+                                        <tr>
+                                            <td>{{ component.code }}</td>
+                                            <td>{{ component.name }}</td>
+                                            <td>
+                                                <span class="badge {% if component.status == 'operational' %}bg-success{% elif component.status == 'maintenance' %}bg-warning{% elif component.status == 'breakdown' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ component.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'maintenance:equipment_detail' component.id %}" class="btn btn-sm btn-link">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center">No components found.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-3">
+                                <a href="{% url 'maintenance:equipment_create' %}?parent={{ equipment.id }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-plus"></i> Add Component
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-file-pdf me-2"></i>Documentation</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for doc in documents %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas {% if doc.document_type == 'manual' %}fa-file-pdf text-danger{% elif doc.document_type == 'drawing' %}fa-file-image text-primary{% elif doc.document_type == 'certificate' %}fa-certificate text-warning{% else %}fa-file text-secondary{% endif %} me-2"></i>
+                                {{ doc.title }}
+                            </div>
+                            <div>
+                                <a href="{{ doc.file.url }}" class="btn btn-sm btn-link" data-bs-toggle="tooltip" title="View" target="_blank">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ doc.file.url }}" class="btn btn-sm btn-link" data-bs-toggle="tooltip" title="Download" download>
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center">No documents available.</li>
+                        {% endfor %}
+                    </ul>
+                    <div class="mt-3">
+                        <a href="{% url 'maintenance:document_create' %}?equipment={{ equipment.id }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-plus"></i> Add Document
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize JSTree with AJAX loading
+        $('#jstree').jstree({
+            'core': {
+                'data': {
+                    'url': '{% url "maintenance:equipment_tree_data" %}',
+                    'dataType': 'json'
+                },
+                'themes': {
+                    'variant': 'large'
+                }
+            },
+            'plugins': ['types', 'search'],
+            'types': {
+                'area': {
+                    'icon': 'fas fa-building'
+                },
+                'equipment': {
+                    'icon': 'fas fa-cog'
+                }
+            }
+        });
+
+        // Handle node selection
+        $('#jstree').on('select_node.jstree', function(e, data) {
+            const nodeId = data.node.id;
+            
+            // Extract entity type and ID from the node ID
+            const [entityType, idStr] = nodeId.split('_');
+            const id = parseInt(idStr);
+            
+            if (entityType === 'equipment') {
+                window.location.href = `/equipment/${id}/`;
+            } else if (entityType === 'area') {
+                window.location.href = `/areas/${id}/`;
+            }
+        });
+
+        // Setup search
+        var searchTimeout;
+        $('#equipmentSearch').keyup(function() {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            searchTimeout = setTimeout(function() {
+                var v = $('#equipmentSearch').val();
+                $('#jstree').jstree(true).search(v);
+            }, 250);
+        });
+    });
+</script>
+{% endblock %}

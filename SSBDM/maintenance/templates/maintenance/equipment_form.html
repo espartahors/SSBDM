@@ -1,0 +1,97 @@
+{% extends "maintenance/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if form.instance.pk %}
+    Edit Equipment: {{ form.instance.code }}
+    {% else %}
+    Add New Equipment
+    {% endif %} - Steel Factory Maintenance System
+{% endblock %}
+
+{% block content %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'maintenance:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'maintenance:equipment_list' %}">Equipment</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        {% if form.instance.pk %}Edit Equipment{% else %}Add Equipment{% endif %}
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-{% if form.instance.pk %}edit{% else %}plus{% endif %} me-2"></i>
+                        {% if form.instance.pk %}
+                        Edit Equipment: {{ form.instance.code }}
+                        {% else %}
+                        Add New Equipment
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Basic Information</h5>
+                                {{ form.code|as_crispy_field }}
+                                {{ form.name|as_crispy_field }}
+                                {{ form.equipment_type|as_crispy_field }}
+                                {{ form.area|as_crispy_field }}
+                                {{ form.parent|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Details</h5>
+                                {{ form.manufacturer|as_crispy_field }}
+                                {{ form.model|as_crispy_field }}
+                                {{ form.serial_number|as_crispy_field }}
+                                {{ form.installation_date|as_crispy_field }}
+                                {{ form.status|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                {{ form.description|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <h5 class="mt-4 mb-3">Technical Specifications</h5>
+                        <div class="row">
+                            {% for field in specs_form %}
+                                {% if field.name != 'specs_json' %}
+                                <div class="col-md-4">
+                                    {{ field|as_crispy_field }}
+                                </div>
+                                {% else %}
+                                {{ field }}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mt-4 d-flex justify-content-between">
+                            <a href="{% if request.GET.parent %}{% url 'maintenance:equipment_detail' request.GET.parent %}{% else %}{% url 'maintenance:equipment_list' %}{% endif %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Save Equipment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
