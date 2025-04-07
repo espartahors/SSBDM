@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+
+{% block title %}Equipment: {{ equipment.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h2>{{ equipment.name }}</h2>
+            <h6 class="text-muted">Code: {{ equipment.code }}</h6>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'equipment:equipment_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Equipment
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">Equipment Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-5 text-muted">Status</div>
+                        <div class="col-md-7">
+                            {% if equipment.status == 'operational' %}
+                                <span class="badge bg-success">Operational</span>
+                            {% elif equipment.status == 'maintenance' %}
+                                <span class="badge bg-warning">Under Maintenance</span>
+                            {% elif equipment.status == 'out_of_service' %}
+                                <span class="badge bg-danger">Out of Service</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ equipment.status }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-5 text-muted">Type</div>
+                        <div class="col-md-7">{{ equipment.get_equipment_type_display }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-5 text-muted">Area</div>
+                        <div class="col-md-7">
+                            {% if equipment.area %}
+                                <a href="{% url 'equipment:area_detail' equipment.area.id %}">
+                                    {{ equipment.area.name }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Not assigned</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-5 text-muted">Parent</div>
+                        <div class="col-md-7">
+                            {% if equipment.parent %}
+                                <a href="{% url 'equipment:equipment_detail' equipment.parent.id %}">
+                                    {{ equipment.parent.name }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">None (Top-level equipment)</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-5 text-muted">Manufacturer</div>
+                        <div class="col-md-7">{{ equipment.manufacturer|default:"Not specified" }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-5 text-muted">Model</div>
+                        <div class="col-md-7">{{ equipment.model|default:"Not specified" }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-5 text-muted">Serial Number</div>
+                        <div class="col-md-7">{{ equipment.serial_number|default:"Not specified" }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-5 text-muted">Installation Date</div>
+                        <div class="col-md-7">{{ equipment.installation_date|date:"Y-m-d"|default:"Not specified" }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-5 text-muted">Last Maintenance</div>
+                        <div class="col-md-7">{{ equipment.last_maintenance_date|date:"Y-m-d"|default:"Never" }}</div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="btn-group w-100">
+                            <a href="{% url 'equipment:equipment_update' equipment.id %}" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="{% url 'equipment:equipment_delete' equipment.id %}" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'maintenance:log_add' %}?equipment={{ equipment.id }}" class="btn btn-success">
+                            <i class="fas fa-clipboard-list"></i> Log Maintenance
+                        </a>
+                        <a href="{% url 'documents:document_add' %}?equipment={{ equipment.id }}" class="btn btn-info">
+                            <i class="fas fa-file-alt"></i> Add Document
+                        </a>
+                        <a href="{% url 'equipment:equipment_add' %}?parent={{ equipment.id }}" class="btn btn-secondary">
+                            <i class="fas fa-cogs"></i> Add Component
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <!-- Description -->
+            {% if equipment.description %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">Description</h5>
+                </div>
+                <div class="card-body">
+                    {{ equipment.description|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Technical Specifications -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Technical Specifications</h5>
+                    <a href="#" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Add Specification
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if tech_specs %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Attribute</th>
+                                        <th>Value</th>
+                                        <th>Unit</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for spec in tech_specs %}
+                                        <tr>
+                                            <td>{{ spec.attribute_name }}</td>
+                                            <td>{{ spec.value }}</td>
+                                            <td>{{ spec.unit|default:"-" }}</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="#" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="#" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="card-body">
+                            <div class="alert alert-info mb-0">
+                                No technical specifications have been added.
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Components -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Components</h5>
+                    <a href="{% url 'equipment:equipment_add' %}?parent={{ equipment.id }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Add Component
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if components %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for component in components %}
+                                        <tr>
+                                            <td>{{ component.code }}</td>
+                                            <td>{{ component.name }}</td>
+                                            <td>{{ component.get_equipment_type_display }}</td>
+                                            <td>
+                                                {% if component.status == 'operational' %}
+                                                    <span class="badge bg-success">Operational</span>
+                                                {% elif component.status == 'maintenance' %}
+                                                    <span class="badge bg-warning">Maintenance</span>
+                                                {% elif component.status == 'out_of_service' %}
+                                                    <span class="badge bg-danger">Out of Service</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ component.status }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{% url 'equipment:equipment_detail' component.id %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'equipment:equipment_update' component.id %}" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="card-body">
+                            <div class="alert alert-info mb-0">
+                                No components have been added.
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Maintenance Logs -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Maintenance History</h5>
+                    <a href="{% url 'maintenance:log_add' %}?equipment={{ equipment.id }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Add Maintenance Log
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if maintenance_logs %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Title</th>
+                                        <th>Type</th>
+                                        <th>Duration</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in maintenance_logs %}
+                                        <tr>
+                                            <td>{{ log.date|date:"Y-m-d" }}</td>
+                                            <td>{{ log.title|truncatechars:30 }}</td>
+                                            <td>{{ log.get_maintenance_type_display }}</td>
+                                            <td>{{ log.duration }} hr</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{% url 'maintenance:log_detail' log.id %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="card-body">
+                            <div class="alert alert-info mb-0">
+                                No maintenance logs have been recorded.
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

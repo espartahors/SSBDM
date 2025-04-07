@@ -1,0 +1,324 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <i class="fas fa-map-marker-alt text-primary"></i> 
+                    {{ area.name }}
+                    <small class="text-muted ms-2">{{ area.code }}</small>
+                </h2>
+                <div class="btn-group">
+                    <a href="{% url 'equipment:area_edit' area.pk %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'equipment:area_add' %}?parent={{ area.pk }}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add Sub-Area
+                    </a>
+                    <a href="{% url 'equipment:equipment_add' %}?area={{ area.pk }}" class="btn btn-info">
+                        <i class="fas fa-plus-circle"></i> Add Equipment
+                    </a>
+                    <a href="{% url 'equipment:area_delete' area.pk %}" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Area Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if area.description %}
+                    <div class="mb-4">
+                        <h6>Description</h6>
+                        <p>{{ area.description|linebreaks }}</p>
+                    </div>
+                    <hr>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6>Code</h6>
+                                <p><span class="badge bg-secondary">{{ area.code }}</span></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6>Parent Area</h6>
+                                <p>
+                                    {% if area.parent %}
+                                    <a href="#" class="area-link" data-area-id="{{ area.parent.id }}">
+                                        {{ area.parent.name }}
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted">Root Area</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6>Created</h6>
+                                <p>{{ area.created_at|date:"F j, Y" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6>Last Updated</h6>
+                                <p>{{ area.updated_at|date:"F j, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <i class="fas fa-map-marker-alt fa-2x text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-0">Sub-Areas</h6>
+                                            <h3 class="my-1">{{ area.get_children.count }}</h3>
+                                            <small class="text-muted">Direct child areas</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <i class="fas fa-project-diagram fa-2x text-info"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-0">All Sub-Areas</h6>
+                                            <h3 class="my-1">{{ area.get_descendant_count }}</h3>
+                                            <small class="text-muted">Including all levels</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <i class="fas fa-cog fa-2x text-success"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-0">Equipment</h6>
+                                            <h3 class="my-1">{{ area.equipment.count }}</h3>
+                                            <small class="text-muted">In this area directly</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <i class="fas fa-tools fa-2x text-warning"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-0">Status</h6>
+                                            {% with operational=area.equipment.filter(status='operational').count %}
+                                            <div class="progress mt-2" style="height: 15px;">
+                                                <div class="progress-bar bg-success" style="width: {{ operational|default:0|div:area.equipment.count|default:1|mul:100 }}%">
+                                                    {{ operational }} Operational
+                                                </div>
+                                            </div>
+                                            {% endwith %}
+                                            <small class="text-muted">Equipment status</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Equipment Table -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Equipment in this Area</h5>
+            <a href="{% url 'equipment:equipment_add' %}?area={{ area.pk }}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus"></i> Add Equipment
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Last Maintenance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for equipment in area.equipment.all %}
+                        <tr>
+                            <td>{{ equipment.code }}</td>
+                            <td>
+                                <a href="#" class="equipment-link" data-equipment-id="{{ equipment.id }}">
+                                    {{ equipment.name }}
+                                </a>
+                                {% if equipment.parent %}
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-level-up-alt fa-rotate-90"></i>
+                                    Part of: <a href="#" class="equipment-link" data-equipment-id="{{ equipment.parent.id }}">{{ equipment.parent.name }}</a>
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td>{{ equipment.get_equipment_type_display }}</td>
+                            <td>
+                                <span class="badge {% if equipment.status == 'operational' %}bg-success{% elif equipment.status == 'maintenance' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ equipment.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if equipment.last_maintenance_date %}
+                                {{ equipment.last_maintenance_date|date:"M d, Y" }}
+                                {% else %}
+                                <span class="text-muted">Not available</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="#" class="btn btn-info equipment-link" data-equipment-id="{{ equipment.id }}" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'equipment:equipment_edit' equipment.pk %}" class="btn btn-primary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'equipment:equipment_delete' equipment.pk %}" class="btn btn-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <i class="fas fa-info-circle text-muted mb-2 d-block"></i>
+                                No equipment in this area.
+                                <div class="mt-2">
+                                    <a href="{% url 'equipment:equipment_add' %}?area={{ area.pk }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-plus"></i> Add Equipment
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sub-Areas Table -->
+    {% if area.get_children %}
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Sub-Areas</h5>
+            <a href="{% url 'equipment:area_add' %}?parent={{ area.pk }}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus"></i> Add Sub-Area
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Sub-Areas</th>
+                            <th>Equipment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for child in area.get_children %}
+                        <tr>
+                            <td>{{ child.code }}</td>
+                            <td>
+                                <a href="#" class="area-link" data-area-id="{{ child.id }}">
+                                    {{ child.name }}
+                                </a>
+                            </td>
+                            <td>{{ child.get_descendant_count }}</td>
+                            <td>{{ child.equipment.count }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="#" class="btn btn-info area-link" data-area-id="{{ child.id }}" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'equipment:area_edit' child.pk %}" class="btn btn-primary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'equipment:area_add' %}?parent={{ child.pk }}" class="btn btn-success" title="Add Sub-Area">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                    <a href="{% url 'equipment:area_delete' child.pk %}" class="btn btn-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Handle area links
+    $('.area-link').on('click', function(e) {
+        e.preventDefault();
+        const areaId = $(this).data('area-id');
+        $('#area-equipment-tree').jstree('select_node', 'area_' + areaId);
+    });
+    
+    // Handle equipment links
+    $('.equipment-link').on('click', function(e) {
+        e.preventDefault();
+        const equipmentId = $(this).data('equipment-id');
+        $('#area-equipment-tree').jstree('select_node', 'equipment_' + equipmentId);
+    });
+</script> 

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Category{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title m-0">Confirm Delete</h5>
+                </div>
+                <div class="card-body">
+                    <p class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Are you sure you want to delete the category "{{ category.name }}"?
+                    </p>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Name</div>
+                                <div class="col-md-8">{{ category.name }}</div>
+                            </div>
+                            {% if category.description %}
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Description</div>
+                                <div class="col-md-8">{{ category.description }}</div>
+                            </div>
+                            {% endif %}
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Parent</div>
+                                <div class="col-md-8">
+                                    {% if category.parent %}
+                                        {{ category.parent.name }}
+                                    {% else %}
+                                        <span class="text-muted">None (Top-level category)</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if has_spare_parts or has_subcategories %}
+                        <div class="alert alert-warning">
+                            <p><strong>Warning:</strong> This category contains:</p>
+                            <ul>
+                                {% if has_spare_parts %}
+                                    <li>{{ category.spare_parts.count }} spare parts</li>
+                                {% endif %}
+                                {% if has_subcategories %}
+                                    <li>{{ category.get_children.count }} subcategories</li>
+                                {% endif %}
+                            </ul>
+                            <p>Deleting this category will leave these items without a category or might cause errors. 
+                            Consider reassigning these items to another category first.</p>
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'spare_parts:category_detail' category.id %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Confirm Delete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

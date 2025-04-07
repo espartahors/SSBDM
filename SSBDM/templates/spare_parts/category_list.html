@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Spare Part Categories{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <h2>Spare Part Categories</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% url 'spare_parts:category_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Category
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Filter Categories</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-10">
+                    <label for="search" class="form-label">Search</label>
+                    <input type="text" name="search" id="search" class="form-control" value="{{ search|default:'' }}" placeholder="Search by name or description">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary mb-2 w-100">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Category List -->
+    <div class="card">
+        <div class="card-body">
+            {% if categories %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Parent Category</th>
+                                <th>Number of Parts</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in categories %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'spare_parts:category_detail' category.id %}">
+                                            {{ category.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ category.description|truncatechars:50 }}</td>
+                                    <td>
+                                        {% if category.parent %}
+                                            <a href="{% url 'spare_parts:category_detail' category.parent.id %}">
+                                                {{ category.parent.name }}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">None</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ category.part_count }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'spare_parts:category_detail' category.id %}" class="btn btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'spare_parts:category_update' category.id %}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'spare_parts:category_delete' category.id %}" class="btn btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    No categories found matching the criteria.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

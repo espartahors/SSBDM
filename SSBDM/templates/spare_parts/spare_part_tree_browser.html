@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Spare Parts Tree Browser - SSBDM{% endblock %}
+
+{% block extra_css %}
+<style>
+    #spareparts-tree {
+        overflow-y: auto;
+        max-height: 600px;
+    }
+    .tree-container {
+        margin-bottom: 20px;
+    }
+    .detail-container {
+        min-height: 400px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h2 class="mb-3">Spare Parts Tree Browser</h2>
+            <p>Browse spare parts and categories in a hierarchical tree structure.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Categories & Parts</h5>
+                </div>
+                <div class="card-body">
+                    <div id="spareparts-tree" class="tree-container">
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Details</h5>
+                </div>
+                <div class="card-body detail-container" id="detail-container">
+                    <div class="alert alert-info">
+                        <p>Select an item from the tree to view details.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Load the tree data
+        $.ajax({
+            url: '{% url "spare_parts:category_tree_data" %}',
+            dataType: 'json',
+            success: function(data) {
+                // Initialize the jsTree
+                $('#spareparts-tree').jstree({
+                    'core': {
+                        'data': data,
+                        'themes': {
+                            'name': 'default',
+                            'responsive': true
+                        }
+                    },
+                    'plugins': ['types', 'wholerow'],
+                    'types': {
+                        'category': {
+                            'icon': 'fas fa-folder'
+                        },
+                        'sparepart': {
+                            'icon': 'fas fa-cog'
+                        }
+                    }
+                }).on('select_node.jstree', function(e, data) {
+                    // When a node is selected, load its details
+                    var node = data.node;
+                    var nodeType = node.original.type;
+                    var nodeId = node.original.id.split('-')[1];
+                    
+                    if (nodeType === 'category') {
+                        loadCategoryDetails(nodeId);
+                    } else if (nodeType === 'sparepart') {
+                        loadSparePartDetails(nodeId);
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                $('#spareparts-tree').html('<div class="alert alert-danger">Error loading tree data. Please try again later.</div>');
+                console.error("Error loading tree data:", error);
+            }
+        });
+        
+        // Function to load category details
+        function loadCategoryDetails(categoryId) {
+            $.ajax({
+                url: '{% url "spare_parts:category_detail_ajax" 0 %}'.replace('0', categoryId),
+                dataType: 'html',
+                success: function(data) {
+                    $('#detail-container').html(data);
+                },
+                error: function(xhr, status, error) {
+                    $('#detail-container').html('<div class="alert alert-danger">Error loading category details. Please try again later.</div>');
+                    console.error("Error loading category details:", error);
+                }
+            });
+        }
+        
+        // Function to load spare part details
+        function loadSparePartDetails(partId) {
+            $.ajax({
+                url: '{% url "spare_parts:spare_part_detail_ajax" 0 %}'.replace('0', partId),
+                dataType: 'html',
+                success: function(data) {
+                    $('#detail-container').html(data);
+                },
+                error: function(xhr, status, error) {
+                    $('#detail-container').html('<div class="alert alert-danger">Error loading spare part details. Please try again later.</div>');
+                    console.error("Error loading spare part details:", error);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

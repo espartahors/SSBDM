@@ -1,113 +1,292 @@
-{% extends "maintenance/base.html" %}
+{% extends "base.html" %}
 
-{% block title %}Maintenance Log: {{ log.title }} - Steel Factory Maintenance System{% endblock %}
+{% block title %}Maintenance Log: {{ log.title }} - SSBDM{% endblock %}
 
 {% block content %}
-<div class="container pt-4">
-    <div class="row">
-        <div class="col-12 mb-4">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'maintenance:dashboard' %}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'maintenance:maintenance_log_list' %}">Maintenance Logs</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ log.title }}</li>
-                </ol>
-            </nav>
-        </div>
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-clipboard-list"></i> {{ log.title }}</h1>
+        <p class="text-muted">
+            <span class="badge {% if log.maintenance_type == 'preventive' %}bg-success{% elif log.maintenance_type == 'corrective' %}bg-warning{% elif log.maintenance_type == 'predictive' %}bg-info{% else %}bg-secondary{% endif %}">
+                {{ log.get_maintenance_type_display }}
+            </span>
+            <span class="badge bg-secondary">{{ log.date }}</span>
+            {% if log.duration %}
+            <span class="badge bg-primary">Duration: {{ log.duration }} minutes</span>
+            {% endif %}
+        </p>
     </div>
-    
-    <div class="row">
-        <div class="col-12 mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2>
-                    <span class="badge bg-{% if log.maintenance_type == 'preventive' %}info{% elif log.maintenance_type == 'corrective' %}warning{% elif log.maintenance_type == 'emergency' %}danger{% else %}secondary{% endif %} me-2">
-                        {{ log.get_maintenance_type_display }}
-                    </span>
-                    {{ log.title }}
-                </h2>
-                <div>
-                    <a href="{% url 'maintenance:maintenance_log_update' log.id %}" class="btn btn-outline-primary me-2">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
-                    <a href="{% url 'maintenance:maintenance_log_delete' log.id %}" class="btn btn-outline-danger">
-                        <i class="fas fa-trash"></i> Delete
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Maintenance Details</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <h6>Equipment</h6>
-                            <p>
-                                <a href="{% url 'maintenance:equipment_detail' log.equipment.id %}">
-                                    {{ log.equipment.code }} - {{ log.equipment.name }}
-                                </a>
-                            </p>
-                        </div>
-                        <div class="col-md-6">
-                            <h6>Date</h6>
-                            <p>{{ log.date|date:"F j, Y" }}</p>
-                        </div>
-                    </div>
-                    
-                    <h6>Description</h6>
-                    <div class="mb-4">
-                        {{ log.description|linebreaks }}
-                    </div>
-                    
-                    <h6>Findings</h6>
-                    <div>
-                        {{ log.findings|default:"No findings recorded"|linebreaks }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Log Information</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between">
-                            <span>Duration:</span>
-                            <strong>{{ log.duration }} hours</strong>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between">
-                            <span>Created:</span>
-                            <strong>{{ log.created_at|date:"Y-m-d H:i" }}</strong>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="fas fa-users me-2"></i>Technicians</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group">
-                        {% for tech in log.technicians.all %}
-                        <li class="list-group-item">
-                            <i class="fas fa-user me-2"></i> {{ tech.get_full_name|default:tech.username }}
-                        </li>
-                        {% empty %}
-                        <li class="list-group-item text-center">No technicians assigned.</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
+    <div class="col-md-4 text-md-end">
+        <div class="btn-group">
+            <a href="{% url 'maintenance:log_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Logs
+            </a>
+            <a href="{% url 'maintenance:log_edit' log.pk %}" class="btn btn-outline-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'maintenance:log_delete' log.pk %}" class="btn btn-outline-danger">
+                <i class="fas fa-trash"></i> Delete
+            </a>
         </div>
     </div>
 </div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Main Log Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Maintenance Details</h5>
+            </div>
+            <div class="card-body">
+                {% if log.equipment %}
+                <div class="mb-4">
+                    <h6>Equipment</h6>
+                    <p class="mb-0">
+                        <a href="{% url 'equipment:equipment_detail' log.equipment.pk %}" class="d-flex align-items-center">
+                            <span class="status-indicator status-{{ log.equipment.status }} me-2"></span>
+                            <strong>{{ log.equipment.name }}</strong> ({{ log.equipment.code }})
+                        </a>
+                    </p>
+                    <small class="text-muted">
+                        {% if log.equipment.area %}
+                        Location: <a href="{% url 'equipment:area_detail' log.equipment.area.pk %}">{{ log.equipment.area.name }}</a>
+                        {% else %}
+                        No area assigned
+                        {% endif %}
+                    </small>
+                </div>
+                {% endif %}
+                
+                <div class="mb-4">
+                    <h6>Description</h6>
+                    <div class="description-content">
+                        {{ log.description|linebreaks }}
+                    </div>
+                </div>
+                
+                {% if log.observations %}
+                <div class="mb-4">
+                    <h6>Observations</h6>
+                    <div class="observation-content">
+                        {{ log.observations|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if log.maintenance_result %}
+                <div class="mb-4">
+                    <h6>Results</h6>
+                    <div class="result-content">
+                        <p>{{ log.get_maintenance_result_display }}</p>
+                        {% if log.result_description %}
+                        <div class="text-muted">
+                            {{ log.result_description|linebreaks }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if log.parts_used.all %}
+                <div class="mb-4">
+                    <h6>Parts Used</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Part Number</th>
+                                    <th>Description</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for part in log.parts_used.all %}
+                                <tr>
+                                    <td><a href="{% url 'spare_parts:spare_part_detail' part.pk %}">{{ part.part_number }}</a></td>
+                                    <td>{{ part.description }}</td>
+                                    <td>{{ part.quantity_used }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Attachments -->
+        {% if log.attachments.all %}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Attachments</h5>
+                <a href="{% url 'maintenance:attachment_add' log.pk %}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> Add Attachment
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for attachment in log.attachments.all %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <a href="{{ attachment.file.url }}" target="_blank" class="d-flex align-items-center">
+                                {% if attachment.file_extension == 'pdf' %}
+                                <i class="fas fa-file-pdf fa-2x text-danger me-3"></i>
+                                {% elif attachment.file_extension == 'doc' or attachment.file_extension == 'docx' %}
+                                <i class="fas fa-file-word fa-2x text-primary me-3"></i>
+                                {% elif attachment.file_extension == 'xls' or attachment.file_extension == 'xlsx' %}
+                                <i class="fas fa-file-excel fa-2x text-success me-3"></i>
+                                {% elif attachment.file_extension == 'jpg' or attachment.file_extension == 'jpeg' or attachment.file_extension == 'png' %}
+                                <i class="fas fa-file-image fa-2x text-info me-3"></i>
+                                {% else %}
+                                <i class="fas fa-file fa-2x text-secondary me-3"></i>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ attachment.title }}</strong>
+                                    <div class="small text-muted">
+                                        {{ attachment.file_name }} ({{ attachment.file_size|filesizeformat }})
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ attachment.file.url }}" target="_blank" class="btn btn-info">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <a href="{% url 'maintenance:attachment_delete' attachment.pk %}" class="btn btn-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <!-- Technicians -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Technicians</h5>
+            </div>
+            <div class="card-body">
+                {% if log.technicians.all %}
+                <ul class="list-group list-group-flush">
+                    {% for tech in log.technicians.all %}
+                    <li class="list-group-item d-flex align-items-center">
+                        <div class="avatar-circle me-3">
+                            {{ tech.get_initials }}
+                        </div>
+                        <div>
+                            <strong>{{ tech.get_full_name|default:tech.username }}</strong>
+                            {% if tech.profile.position %}
+                            <div class="small text-muted">{{ tech.profile.position }}</div>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No technicians assigned</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Metadata -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Log Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Created</h6>
+                        <p>{{ log.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Last Updated</h6>
+                        <p>{{ log.updated_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Created By</h6>
+                        <p>
+                            {% if log.created_by %}
+                            {{ log.created_by.get_full_name|default:log.created_by.username }}
+                            {% else %}
+                            <span class="text-muted">Unknown</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Updated By</h6>
+                        <p>
+                            {% if log.updated_by %}
+                            {{ log.updated_by.get_full_name|default:log.updated_by.username }}
+                            {% else %}
+                            <span class="text-muted">Unknown</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipment History -->
+        {% if log.equipment %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Equipment Maintenance History</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for history_log in equipment_history %}
+                    {% if history_log.pk != log.pk %}
+                    <a href="{% url 'maintenance:log_detail' history_log.pk %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ history_log.title }}</h6>
+                            <small>{{ history_log.date }}</small>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge {% if history_log.maintenance_type == 'preventive' %}bg-success{% elif history_log.maintenance_type == 'corrective' %}bg-warning{% elif history_log.maintenance_type == 'predictive' %}bg-info{% else %}bg-secondary{% endif %}">
+                                {{ history_log.get_maintenance_type_display }}
+                            </span>
+                            <span class="badge {% if history_log.maintenance_result == 'successful' %}bg-success{% elif history_log.maintenance_result == 'partial' %}bg-warning{% elif history_log.maintenance_result == 'failed' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ history_log.get_maintenance_result_display }}
+                            </span>
+                        </div>
+                    </a>
+                    {% endif %}
+                    {% empty %}
+                    <div class="list-group-item text-center py-4">
+                        <div class="text-muted">
+                            <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                            <p>No previous maintenance logs</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #6c757d;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+</style>
 {% endblock %}

@@ -1,0 +1,160 @@
+{% extends "equipment/base_tree_browser.html" %}
+
+{% block title %}Spare Parts Browser - SSBDM{% endblock %}
+
+{% block tree_icon %}fa-cogs{% endblock %}
+{% block browser_title %}Spare Parts Browser{% endblock %}
+{% block browser_subtitle %}Browse equipment and related spare parts{% endblock %}
+
+{% block action_buttons %}
+<div class="btn-group">
+    <a href="{% url 'spare_parts:spare_part_add' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Spare Part
+    </a>
+    <a href="{% url 'spare_parts:transaction_add' %}" class="btn btn-success">
+        <i class="fas fa-exchange-alt"></i> Add Transaction
+    </a>
+</div>
+{% endblock %}
+
+{% block tree_title %}Equipment & Spare Parts{% endblock %}
+
+{% block tree %}
+<div id="spare-parts-tree"></div>
+{% endblock %}
+
+{% block detail_section %}
+<div id="detail-panel">
+    <div class="card h-100">
+        <div class="card-header">
+            <h5 class="card-title mb-0" id="detail-title">Select an item to view details</h5>
+        </div>
+        <div class="card-body" id="detail-content">
+            <div class="text-center text-muted h-100 d-flex flex-column justify-content-center">
+                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                <p>Select an equipment, component, area, category, or spare part from the tree to view details.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function() {
+        $.ajax({
+            url: "{% url 'spare_parts:spare_parts_tree_data' %}",
+            dataType: "json",
+            success: function(data) {
+                $('#spare-parts-tree').jstree({
+                    'core': {
+                        'data': data,
+                        'themes': {
+                            'name': 'proton',
+                            'responsive': true
+                        }
+                    },
+                    'types': {
+                        'area': {
+                            'icon': 'fas fa-map-marker-alt text-danger'
+                        },
+                        'equipment': {
+                            'icon': 'fas fa-cog text-success'
+                        },
+                        'component': {
+                            'icon': 'fas fa-puzzle-piece text-info'
+                        },
+                        'spare_part': {
+                            'icon': 'fas fa-tools text-warning'
+                        },
+                        'category': {
+                            'icon': 'fas fa-folder text-primary'
+                        }
+                    },
+                    'plugins': ['types', 'search', 'state']
+                }).on('ready.jstree', function() {
+                    // Expand first level nodes when tree is ready
+                    var firstLevelNodes = $('#spare-parts-tree').jstree(true).get_node('#').children;
+                    for (var i = 0; i < firstLevelNodes.length; i++) {
+                        $('#spare-parts-tree').jstree('open_node', firstLevelNodes[i]);
+                    }
+                }).on('select_node.jstree', function(e, data) {
+                    // Handle node selection
+                    var node = data.node;
+                    loadDetails(node);
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error("Error loading tree data:", error);
+                $('#spare-parts-tree').html('<div class="alert alert-danger">Error loading tree data. Please try refreshing the page.</div>');
+            }
+        });
+        
+        // Function to load details based on node type
+        function loadDetails(node) {
+            var nodeId = node.id;
+            var objectType = node.type;
+            var objectId = node.id.split('_')[1];
+            
+            $('#detail-title').text(node.text);
+            
+            if (objectType === 'spare_part') {
+                $.ajax({
+                    url: "{% url 'spare_parts:spare_part_detail' pk=0 %}".replace('0', objectId),
+                    success: function(data) {
+                        $('#detail-content').html(data);
+                    },
+                    error: function(xhr, status, error) {
+                        showError("Error loading spare part details.");
+                    }
+                });
+            } else if (objectType === 'equipment' || objectType === 'component') {
+                $.ajax({
+                    url: "{% url 'equipment:equipment_spare_parts' pk=0 %}".replace('0', objectId),
+                    success: function(data) {
+                        $('#detail-content').html(data);
+                    },
+                    error: function(xhr, status, error) {
+                        showError("Error loading equipment details.");
+                    }
+                });
+            } else if (objectType === 'area') {
+                $.ajax({
+                    url: "{% url 'equipment:area_detail' pk=0 %}".replace('0', objectId),
+                    success: function(data) {
+                        $('#detail-content').html(data);
+                    },
+                    error: function(xhr, status, error) {
+                        showError("Error loading area details.");
+                    }
+                });
+            } else if (objectType === 'category') {
+                $.ajax({
+                    url: "{% url 'spare_parts:category_detail' pk=0 %}".replace('0', objectId),
+                    success: function(data) {
+                        $('#detail-content').html(data);
+                    },
+                    error: function(xhr, status, error) {
+                        showError("Error loading category details.");
+                    }
+                });
+            }
+        }
+        
+        function showError(message) {
+            $('#detail-content').html(`
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${message}
+                </div>
+            `);
+        }
+        
+        // Initialize search functionality
+        $('#tree-search-input').on('keyup', function() {
+            var searchString = $(this).val();
+            $('#spare-parts-tree').jstree('search', searchString);
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,180 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <i class="fas {% if equipment.equipment_type == 'component' %}fa-puzzle-piece text-info{% else %}fa-cog text-success{% endif %}"></i> 
+                    {{ equipment.name }} - Technical Specifications
+                    <small class="text-muted ms-2">{{ equipment.code }}</small>
+                </h2>
+                <div class="btn-group">
+                    <a href="{% url 'equipment:equipment_detail' equipment.pk %}" class="btn btn-info">
+                        <i class="fas fa-info-circle"></i> Equipment Details
+                    </a>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSpecModal">
+                        <i class="fas fa-plus"></i> Add Specification
+                    </button>
+                </div>
+            </div>
+            {% if equipment.parent %}
+            <p class="text-muted">
+                <i class="fas fa-level-up-alt fa-rotate-90 me-1"></i> Part of: 
+                <a href="#" class="equipment-link" data-equipment-id="{{ equipment.parent.id }}">
+                    {{ equipment.parent.name }}
+                </a>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Equipment Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Type</h6>
+                        <p>{{ equipment.get_equipment_type_display }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Status</h6>
+                        <p>
+                            <span class="badge {% if equipment.status == 'operational' %}bg-success{% elif equipment.status == 'maintenance' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ equipment.get_status_display }}
+                            </span>
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Location</h6>
+                        <p>
+                            {% if equipment.area %}
+                            <a href="#" class="area-link" data-area-id="{{ equipment.area.id }}">
+                                {{ equipment.area.name }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted">Not assigned</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Model</h6>
+                        <p>
+                            {% if equipment.model %}
+                            {{ equipment.model }}
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Technical Specifications</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Specification</th>
+                                    <th>Value</th>
+                                    <th>Unit</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for spec in specs %}
+                                <tr>
+                                    <td>{{ spec.specification }}</td>
+                                    <td>{{ spec.value }}</td>
+                                    <td>{{ spec.unit }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'equipment:specs_edit' spec.pk %}" class="btn btn-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'equipment:technical_specs_delete' spec.pk %}" class="btn btn-danger" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">
+                                        <i class="fas fa-info-circle text-muted mb-2 d-block"></i>
+                                        No specifications added for this equipment.
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addSpecModal">
+                                                <i class="fas fa-plus"></i> Add Specification
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Specification Modal -->
+<div class="modal fade" id="addSpecModal" tabindex="-1" aria-labelledby="addSpecModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSpecModalLabel">Add Technical Specification</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'equipment:add_specification' equipment.pk %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="specification" class="form-label">Specification</label>
+                        <input type="text" class="form-control" id="specification" name="specification" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="value" class="form-label">Value</label>
+                        <input type="text" class="form-control" id="value" name="value" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="unit" class="form-label">Unit</label>
+                        <input type="text" class="form-control" id="unit" name="unit">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Specification</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Handle equipment links
+    $('.equipment-link').on('click', function(e) {
+        e.preventDefault();
+        const equipmentId = $(this).data('equipment-id');
+        $('#tree').jstree('select_node', 'equipment_' + equipmentId);
+    });
+    
+    // Handle area links
+    $('.area-link').on('click', function(e) {
+        e.preventDefault();
+        const areaId = $(this).data('area-id');
+        $('#tree').jstree('select_node', 'area_' + areaId);
+    });
+</script> 

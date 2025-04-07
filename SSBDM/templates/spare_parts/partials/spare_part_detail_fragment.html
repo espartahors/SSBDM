@@ -1,0 +1,110 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">{{ spare_part.part_number }}</h5>
+        <div>
+            <a href="{% url 'spare_parts:spare_part_update' spare_part.id %}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'spare_parts:transaction_add' %}?part={{ spare_part.id }}" class="btn btn-sm btn-outline-success">
+                <i class="fas fa-exchange-alt"></i> New Transaction
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-12">
+                <h6>Description</h6>
+                <p>{{ spare_part.description }}</p>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="mb-2">
+                    <strong>Category:</strong> 
+                    {% if spare_part.category %}
+                        {{ spare_part.category.name }}
+                    {% else %}
+                        <span class="text-muted">None</span>
+                    {% endif %}
+                </div>
+                <div class="mb-2">
+                    <strong>Supplier:</strong> {{ spare_part.supplier }}
+                </div>
+                <div class="mb-2">
+                    <strong>Location:</strong> {{ spare_part.location }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-2">
+                    <strong>Unit Price:</strong>
+                    {% if spare_part.unit_price %}
+                        ${{ spare_part.unit_price }}
+                    {% else %}
+                        <span class="text-muted">Not set</span>
+                    {% endif %}
+                </div>
+                <div class="mb-2">
+                    <strong>Last Updated:</strong> {{ spare_part.last_updated|date:"d M Y" }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="card bg-light">
+                    <div class="card-body p-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-4 text-center">
+                                <h6 class="mb-1">Current Stock</h6>
+                                <h3 class="{% if spare_part.quantity_in_stock < spare_part.minimum_stock %}{% if spare_part.quantity_in_stock == 0 %}text-danger{% else %}text-warning{% endif %}{% else %}text-success{% endif %}">
+                                    {{ spare_part.quantity_in_stock }}
+                                </h3>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h6 class="mb-1">Minimum Stock</h6>
+                                <h3 class="text-muted">{{ spare_part.minimum_stock }}</h3>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h6 class="mb-1">Status</h6>
+                                {% if spare_part.quantity_in_stock == 0 %}
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                {% elif spare_part.quantity_in_stock < spare_part.minimum_stock %}
+                                    <span class="badge bg-warning">Low Stock</span>
+                                {% else %}
+                                    <span class="badge bg-success">In Stock</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if spare_part.notes %}
+        <div class="row mb-3">
+            <div class="col-12">
+                <h6>Notes</h6>
+                <p>{{ spare_part.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="row">
+            <div class="col-12">
+                <h6>Equipment Used In</h6>
+                {% if spare_part.equipment.all %}
+                <ul class="list-group">
+                    {% for equipment in spare_part.equipment.all %}
+                    <li class="list-group-item">
+                        <a href="{% url 'equipment:equipment_detail' equipment.id %}">{{ equipment.code }} - {{ equipment.name }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">This spare part is not linked to any equipment.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div> 

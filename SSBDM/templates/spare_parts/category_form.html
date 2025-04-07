@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if form.instance.id %}Edit Category{% else %}Add Category{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        {% if form.instance.id %}
+                            Edit Category: {{ form.instance.name }}
+                        {% else %}
+                            Add New Category
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="form">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.name.id_for_label }}">Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.description.id_for_label }}">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.parent.id_for_label }}">Parent Category (Optional)</label>
+                            {{ form.parent }}
+                            {% if form.parent.errors %}
+                                <div class="invalid-feedback d-block">{{ form.parent.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">Leave empty to create a top-level category</small>
+                        </div>
+                        
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                {% if form.instance.id %}Save Changes{% else %}Add Category{% endif %}
+                            </button>
+                            <a href="{% url 'spare_parts:category_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

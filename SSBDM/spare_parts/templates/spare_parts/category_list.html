@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Spare Part Categories - SSBDM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="fas fa-folder me-2"></i> Spare Part Categories</h1>
+            <p class="text-muted">Manage categories for organizing spare parts</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'spare_parts:category_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Category
+            </a>
+            <a href="{% url 'spare_parts:spare_part_list' %}" class="btn btn-secondary">
+                <i class="fas fa-tools"></i> View Spare Parts
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Root Categories</h5>
+                </div>
+                <div class="card-body">
+                    {% if categories %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Subcategories</th>
+                                    <th>Spare Parts</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category in categories %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'spare_parts:category_detail' category.pk %}">
+                                            <i class="fas fa-folder me-2"></i> {{ category.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ category.description|truncatechars:50 }}</td>
+                                    <td>{{ category.get_children.count }}</td>
+                                    <td>{{ category.spare_parts.count }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'spare_parts:category_detail' category.pk %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'spare_parts:category_edit' category.pk %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'spare_parts:category_delete' category.pk %}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-folder-open fa-4x mb-3 text-muted"></i>
+                        <h4>No Categories Found</h4>
+                        <p class="text-muted">There are no categories yet. Start by adding a category.</p>
+                        <a href="{% url 'spare_parts:category_add' %}" class="btn btn-primary mt-2">
+                            <i class="fas fa-plus"></i> Add Category
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

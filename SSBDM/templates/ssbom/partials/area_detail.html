@@ -1,0 +1,134 @@
+<div class="detail-container">
+    {% if area.image %}
+    <div class="detail-image">
+        <img src="{{ area.image.url }}" alt="{{ area.name }}">
+    </div>
+    {% else %}
+    <div class="detail-placeholder">
+        <i class="fas fa-image fa-3x"></i>
+    </div>
+    {% endif %}
+    
+    <div class="detail-info">
+        <h4 class="mb-3">Area Information</h4>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="detail-info-item">
+                    <span class="detail-info-label">Area Name</span>
+                    <div class="detail-info-value">{{ area.name }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="detail-info-item">
+                    <span class="detail-info-label">Code</span>
+                    <div class="detail-info-value">{{ area.code }}</div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="detail-info-item">
+                    <span class="detail-info-label">Description</span>
+                    <div class="detail-info-value">{{ area.description|default:"No description provided." }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="detail-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Equipment in this Area</h4>
+            <a href="{% url 'equipment:area_detail' area.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-external-link-alt me-1"></i> View Full Details
+            </a>
+        </div>
+        
+        {% if equipment_list %}
+        <div class="table-responsive">
+            <table class="data-table data-table-compact">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for equipment in equipment_list %}
+                    <tr>
+                        <td>{{ equipment.name }}</td>
+                        <td>{{ equipment.code }}</td>
+                        <td>
+                            <span class="status-badge status-{{ equipment.status|lower }}">
+                                <i class="fas fa-circle"></i> {{ equipment.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="action-cell">
+                            <div class="action-group">
+                                <button type="button" class="btn-action" onclick="loadEquipmentDetails('{{ equipment.id }}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <p>No equipment in this area</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="detail-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Documents Related to this Area</h4>
+        </div>
+        
+        {% if document_list %}
+        <div class="table-responsive">
+            <table class="data-table data-table-compact">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for document in document_list %}
+                    <tr>
+                        <td>{{ document.title }}</td>
+                        <td>{{ document.get_document_type_display }}</td>
+                        <td>{{ document.date_added|date:"d/m/Y" }}</td>
+                        <td class="action-cell">
+                            <div class="action-group">
+                                <button type="button" class="btn-action" onclick="loadDocumentDetails('{{ document.id }}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="{{ document.file.url }}" target="_blank" class="btn-action">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <p>No documents related to this area</p>
+        </div>
+        {% endif %}
+    </div>
+</div> 

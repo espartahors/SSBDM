@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Equipment Tree Browser - SSBDM{% endblock %}
+
+{% block extra_css %}
+<style>
+    #equipment-tree {
+        overflow-y: auto;
+        max-height: 600px;
+    }
+    .tree-container {
+        margin-bottom: 20px;
+    }
+    .detail-container {
+        min-height: 400px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h2 class="mb-3">Equipment Tree Browser</h2>
+            <p>Browse equipment and areas in a hierarchical tree structure.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Equipment Tree</h5>
+                </div>
+                <div class="card-body">
+                    <div id="equipment-tree" class="tree-container">
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Details</h5>
+                </div>
+                <div class="card-body detail-container" id="detail-container">
+                    <div class="alert alert-info">
+                        <p>Select an item from the tree to view details.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Load the tree data
+        $.ajax({
+            url: '{% url "equipment:tree_data" %}',
+            dataType: 'json',
+            success: function(data) {
+                // Initialize the jsTree
+                $('#equipment-tree').jstree({
+                    'core': {
+                        'data': data,
+                        'themes': {
+                            'name': 'default',
+                            'responsive': true
+                        }
+                    },
+                    'plugins': ['types', 'wholerow'],
+                    'types': {
+                        'area': {
+                            'icon': 'fas fa-map-marker-alt'
+                        },
+                        'equipment': {
+                            'icon': 'fas fa-tools'
+                        }
+                    }
+                }).on('select_node.jstree', function(e, data) {
+                    // When a node is selected, load its details
+                    var node = data.node;
+                    var nodeType = node.original.type;
+                    var nodeId = node.original.id.split('-')[1];
+                    
+                    if (nodeType === 'area') {
+                        loadAreaDetails(nodeId);
+                    } else if (nodeType === 'equipment') {
+                        loadEquipmentDetails(nodeId);
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                $('#equipment-tree').html('<div class="alert alert-danger">Error loading tree data. Please try again later.</div>');
+                console.error("Error loading tree data:", error);
+            }
+        });
+        
+        // Function to load area details
+        function loadAreaDetails(areaId) {
+            $.ajax({
+                url: '{% url "equipment:area_detail_ajax" 0 %}'.replace('0', areaId),
+                dataType: 'html',
+                success: function(data) {
+                    $('#detail-container').html(data);
+                },
+                error: function(xhr, status, error) {
+                    $('#detail-container').html('<div class="alert alert-danger">Error loading area details. Please try again later.</div>');
+                    console.error("Error loading area details:", error);
+                }
+            });
+        }
+        
+        // Function to load equipment details
+        function loadEquipmentDetails(equipmentId) {
+            $.ajax({
+                url: '{% url "equipment:equipment_detail_ajax" 0 %}'.replace('0', equipmentId),
+                dataType: 'html',
+                success: function(data) {
+                    $('#detail-container').html(data);
+                },
+                error: function(xhr, status, error) {
+                    $('#detail-container').html('<div class="alert alert-danger">Error loading equipment details. Please try again later.</div>');
+                    console.error("Error loading equipment details:", error);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

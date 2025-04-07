@@ -1,0 +1,116 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:form="sap.ui.layout.form">
+    
+    <Dialog
+        title="{= ${equipment>/maintenanceLogDialogMode} === 'create' ? ${i18n>createMaintenanceLog} : ${i18n>editMaintenanceLog}}"
+        contentWidth="50%">
+        
+        <form:SimpleForm
+            editable="true"
+            layout="ResponsiveGridLayout"
+            labelSpanXL="4"
+            labelSpanL="4" 
+            labelSpanM="4"
+            labelSpanS="12"
+            adjustLabelSpan="false"
+            emptySpanXL="0"
+            emptySpanL="0" 
+            emptySpanM="0"
+            emptySpanS="0"
+            columnsXL="1"
+            columnsL="1" 
+            columnsM="1">
+            <form:content>
+                <Label text="{i18n>maintenanceType}" required="true" />
+                <Select
+                    selectedKey="{formData>/maintenance_type}"
+                    items="{
+                        path: 'equipment>/maintenance_types',
+                        sorter: { path: 'text' }
+                    }">
+                    <core:Item key="preventive" text="{i18n>preventive}" />
+                    <core:Item key="corrective" text="{i18n>corrective}" />
+                    <core:Item key="predictive" text="{i18n>predictive}" />
+                    <core:Item key="regulatory" text="{i18n>regulatory}" />
+                </Select>
+                
+                <Label text="{i18n>date}" required="true" />
+                <DateTimePicker
+                    value="{formData>/date}"
+                    valueFormat="yyyy-MM-dd'T'HH:mm:ss"
+                    displayFormat="short" />
+                
+                <Label text="{i18n>status}" required="true" />
+                <Select
+                    selectedKey="{formData>/status}"
+                    items="{
+                        path: 'equipment>/maintenance_statuses',
+                        sorter: { path: 'text' }
+                    }">
+                    <core:Item key="pending" text="{i18n>pending}" />
+                    <core:Item key="in_progress" text="{i18n>inProgress}" />
+                    <core:Item key="completed" text="{i18n>completed}" />
+                </Select>
+                
+                <Label text="{i18n>description}" required="true" />
+                <TextArea
+                    value="{formData>/description}"
+                    rows="3"
+                    growing="true"
+                    growingMaxLines="10"
+                    placeholder="{i18n>enterDescription}" />
+                
+                <Label text="{i18n>cost}" />
+                <Input
+                    value="{formData>/cost}"
+                    type="Number"
+                    placeholder="{i18n>enterCost}" />
+                
+                <Label text="{i18n>parts}" />
+                <VBox>
+                    <Table
+                        id="partsTable"
+                        items="{formData>/parts_used}"
+                        noDataText="{i18n>noPartsUsed}"
+                        mode="Delete"
+                        delete=".onDeletePart">
+                        <columns>
+                            <Column>
+                                <Text text="{i18n>part}" />
+                            </Column>
+                            <Column>
+                                <Text text="{i18n>quantity}" />
+                            </Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <cells>
+                                    <Text text="{formData>part_name}" />
+                                    <Text text="{formData>quantity}" />
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                    <Button
+                        text="{i18n>addPart}"
+                        icon="sap-icon://add"
+                        press=".onAddPart" />
+                </VBox>
+            </form:content>
+        </form:SimpleForm>
+        
+        <beginButton>
+            <Button
+                text="{i18n>save}"
+                type="Emphasized"
+                press=".onSaveMaintenanceLog" />
+        </beginButton>
+        <endButton>
+            <Button
+                text="{i18n>cancel}"
+                press=".onCancelMaintenanceLog" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition> 

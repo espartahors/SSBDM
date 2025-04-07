@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Spare Part{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title m-0">Confirm Delete</h5>
+                </div>
+                <div class="card-body">
+                    <p class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Are you sure you want to delete the spare part "{{ spare_part.part_number }}"?
+                    </p>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Part Number</div>
+                                <div class="col-md-8">{{ spare_part.part_number }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Description</div>
+                                <div class="col-md-8">{{ spare_part.description }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Current Stock</div>
+                                <div class="col-md-8">{{ spare_part.quantity_in_stock }}</div>
+                            </div>
+                            {% if spare_part.equipment %}
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Equipment</div>
+                                <div class="col-md-8">{{ spare_part.equipment.name }}</div>
+                            </div>
+                            {% endif %}
+                            {% if spare_part.category %}
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Category</div>
+                                <div class="col-md-8">{{ spare_part.category.name }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <p><strong>Warning:</strong> Deleting this spare part will also delete all related transaction history. This action cannot be undone.</p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'spare_parts:spare_part_detail' spare_part.id %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Confirm Delete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

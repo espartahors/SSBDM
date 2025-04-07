@@ -1,0 +1,133 @@
+/* Main Styles */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container-fluid {
+    flex: 1;
+}
+
+footer {
+    margin-top: auto;
+}
+
+/* Card styling */
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* Status indicators */
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-operational {
+    background-color: var(--success-color);
+}
+
+.status-maintenance {
+    background-color: var(--warning-color);
+}
+
+.status-out-of-service, .status-out-of-stock {
+    background-color: var(--danger-color);
+}
+
+.status-retired {
+    background-color: var(--secondary-color);
+}
+
+.status-in-stock {
+    background-color: var(--success-color);
+}
+
+.status-low-stock {
+    background-color: var(--warning-color);
+}
+
+/* Table styles */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table th {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Form styles */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Dashboard widgets */
+.dashboard-widget {
+    border-radius: 0.25rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-widget-icon {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 3rem;
+    opacity: 0.15;
+}
+
+.quick-stats {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* Navigation styling */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Alert styling */
+.alert {
+    border-radius: 0.25rem;
+}
+
+/* Login page */
+.login-container {
+    max-width: 400px;
+    margin: 5rem auto;
+} 

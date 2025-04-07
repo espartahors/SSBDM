@@ -103,27 +103,10 @@
                         </div>
                     </div>
 
+                   <!-- Replace the technical specifications card with this -->
                     <div class="card mb-4">
                         <div class="card-header">
                             <h5 class="card-title mb-0"><i class="fas fa-cogs me-2"></i>Technical Specifications</h5>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-sm">
-                                <tbody>
-                                    {% if tech_specs %}
-                                        {% for key, value in tech_specs.items %}
-                                        <tr>
-                                            <th width="40%">{{ key|title|replace_underscore }}</th>
-                                            <td>{{ value }}</td>
-                                        </tr>
-                                        {% endfor %}
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="2" class="text-center">No technical specifications available.</td>
-                                        </tr>
-                                    {% endif %}
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>

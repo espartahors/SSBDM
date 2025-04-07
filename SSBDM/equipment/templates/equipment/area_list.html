@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Areas - SSBDM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-map-marker-alt"></i> Areas</h1>
+        <p class="text-muted">Manage your facility areas and equipment locations</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'equipment:area_add' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Area
+        </a>
+    </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <label for="search" class="form-label">Search Areas</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       placeholder="Search by name or description..." value="{{ request.GET.search|default:'' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="parent" class="form-label">Parent Area</label>
+                <select name="parent" id="parent" class="form-select">
+                    <option value="">All Areas</option>
+                    <option value="root" {% if request.GET.parent == 'root' %}selected{% endif %}>Root Areas Only</option>
+                    {% for area in all_areas %}
+                    <option value="{{ area.id }}" {% if request.GET.parent == area.id|stringformat:"i" %}selected{% endif %}>{{ area.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-primary w-100" type="submit">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Areas Table -->
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Parent Area</th>
+                    <th>Sub-Areas</th>
+                    <th>Equipment</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for area in area_list %}
+                <tr>
+                    <td>
+                        <a href="{% url 'equipment:area_detail' area.pk %}">
+                            {% if area.level > 0 %}
+                                {% for i in area.level|rjust:area.level %}
+                                <span class="text-muted">─</span>
+                                {% endfor %}
+                            {% endif %}
+                            {{ area.name }}
+                        </a>
+                    </td>
+                    <td>{{ area.description|truncatechars:50 }}</td>
+                    <td>
+                        {% if area.parent %}
+                            <a href="{% url 'equipment:area_detail' area.parent.pk %}">{{ area.parent.name }}</a>
+                        {% else %}
+                            <span class="text-muted">Root Area</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ area.get_descendant_count }}</td>
+                    <td>{{ area.equipment.count }}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'equipment:area_detail' area.pk %}" class="btn btn-info" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'equipment:area_edit' area.pk %}" class="btn btn-primary" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'equipment:area_add' %}?parent={{ area.pk }}" class="btn btn-success" title="Add Sub-Area">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                            <a href="{% url 'equipment:area_delete' area.pk %}" class="btn btn-danger" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center p-5">
+                        <div class="text-muted">
+                            <i class="fas fa-map-marker-alt fa-3x mb-3"></i>
+                            <p>No areas found</p>
+                            {% if request.GET %}
+                            <a href="{% url 'equipment:area_list' %}" class="btn btn-outline-secondary">Clear Filters</a>
+                            {% else %}
+                            <a href="{% url 'equipment:area_add' %}" class="btn btn-primary">Add Area</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Area Hierarchy Visual -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Area Hierarchy</h5>
+    </div>
+    <div class="card-body">
+        <div id="area-tree" class="d-flex justify-content-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page=1" aria-label="First">
+                <span aria-hidden="true">&laquo;&laquo;</span>
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="First">
+                <span aria-hidden="true">&laquo;&laquo;</span>
+            </a>
+        </li>
+        <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+            <a class="page-link" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page={{ num }}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                <span aria-hidden="true">&raquo;&raquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="Last">
+                <span aria-hidden="true">&raquo;&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch area tree data
+        fetch('{% url "equipment:area_tree_data" %}')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('area-tree').innerHTML = '';
+                createAreaTree(data);
+            })
+            .catch(error => {
+                console.error('Error loading area tree:', error);
+                document.getElementById('area-tree').innerHTML = '<div class="alert alert-danger">Error loading area hierarchy</div>';
+            });
+    });
+    
+    function createAreaTree(data) {
+        // Tree diagram configuration
+        const width = 900;
+        const height = 600;
+        const margin = {top: 20, right: 120, bottom: 20, left: 120};
+        
+        // Create the SVG container
+        const svg = d3.select('#area-tree')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+        
+        // Create the tree layout
+        const treeLayout = d3.tree()
+            .size([height - margin.top - margin.bottom, width - margin.left - margin.right]);
+        
+        // Convert the data to hierarchy
+        const root = d3.hierarchy(data);
+        
+        // Assign positions to nodes
+        treeLayout(root);
+        
+        // Create links
+        svg.selectAll('.link')
+            .data(root.links())
+            .enter()
+            .append('path')
+            .attr('class', 'link')
+            .attr('fill', 'none')
+            .attr('stroke', '#ccc')
+            .attr('stroke-width', 1.5)
+            .attr('d', d => {
+                return `M${d.source.y},${d.source.x}
+                        C${(d.source.y + d.target.y) / 2},${d.source.x}
+                         ${(d.source.y + d.target.y) / 2},${d.target.x}
+                         ${d.target.y},${d.target.x}`;
+            });
+        
+        // Create nodes
+        const nodes = svg.selectAll('.node')
+            .data(root.descendants())
+            .enter()
+            .append('g')
+            .attr('class', 'node')
+            .attr('transform', d => `translate(${d.y},${d.x})`);
+        
+        // Add circles for nodes
+        nodes.append('circle')
+            .attr('r', 5)
+            .attr('fill', d => d.children ? '#2a93d5' : '#82c91e')
+            .style('cursor', 'pointer')
+            .on('click', function(event, d) {
+                window.location.href = `/equipment/areas/${d.data.id}/`;
+            });
+        
+        // Add node labels
+        nodes.append('text')
+            .attr('dy', 3)
+            .attr('x', d => d.children ? -8 : 8)
+            .style('text-anchor', d => d.children ? 'end' : 'start')
+            .style('font-size', '12px')
+            .style('cursor', 'pointer')
+            .text(d => d.data.name)
+            .on('click', function(event, d) {
+                window.location.href = `/equipment/areas/${d.data.id}/`;
+            });
+    }
+</script>
+{% endblock %} 

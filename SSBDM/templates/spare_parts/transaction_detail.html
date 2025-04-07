@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Transaction Details{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h2>Transaction Details</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'spare_parts:transaction_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Transactions
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        {% if transaction.transaction_type == 'in' %}
+                            Stock In
+                        {% else %}
+                            Stock Out
+                        {% endif %} 
+                        Transaction #{{ transaction.id }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Date</div>
+                        <div class="col-md-8">{{ transaction.date|date:"Y-m-d H:i" }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Transaction Type</div>
+                        <div class="col-md-8">
+                            {% if transaction.transaction_type == 'in' %}
+                                <span class="badge bg-success">Stock In</span>
+                            {% else %}
+                                <span class="badge bg-warning">Stock Out</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Spare Part</div>
+                        <div class="col-md-8">
+                            <a href="{% url 'spare_parts:spare_part_detail' transaction.spare_part.id %}">
+                                {{ transaction.spare_part.part_number }} - {{ transaction.spare_part.description }}
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Quantity</div>
+                        <div class="col-md-8">{{ transaction.quantity }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Performed By</div>
+                        <div class="col-md-8">{{ transaction.performed_by.get_full_name|default:transaction.performed_by.username }}</div>
+                    </div>
+                    
+                    {% if transaction.notes %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">Notes</div>
+                        <div class="col-md-8">{{ transaction.notes|linebreaks }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="btn-group">
+                                <a href="{% url 'spare_parts:transaction_update' transaction.id %}" class="btn btn-primary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="{% url 'spare_parts:transaction_delete' transaction.id %}" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Spare Part Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-5 text-muted">Part Number</div>
+                        <div class="col-7">{{ transaction.spare_part.part_number }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 text-muted">Current Stock</div>
+                        <div class="col-7">{{ transaction.spare_part.quantity_in_stock }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 text-muted">Min. Stock</div>
+                        <div class="col-7">{{ transaction.spare_part.minimum_stock }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 text-muted">Status</div>
+                        <div class="col-7">
+                            {% if transaction.spare_part.quantity_in_stock <= 0 %}
+                                <span class="badge bg-danger">Out of Stock</span>
+                            {% elif transaction.spare_part.quantity_in_stock < transaction.spare_part.minimum_stock %}
+                                <span class="badge bg-warning">Low Stock</span>
+                            {% else %}
+                                <span class="badge bg-success">In Stock</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'spare_parts:spare_part_detail' transaction.spare_part.id %}" class="btn btn-sm btn-outline-primary w-100">
+                            View Spare Part Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

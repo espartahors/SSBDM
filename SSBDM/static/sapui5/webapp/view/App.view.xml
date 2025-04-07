@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mvc:View
+    controllerName="ssbdm.controller.App"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:tnt="sap.tnt"
+    displayBlock="true"
+    height="100%">
+    <App id="app">
+        <tnt:ToolPage id="toolPage" sideExpanded="true">
+            <tnt:header>
+                <OverflowToolbar>
+                    <Button
+                        id="sideNavigationToggleButton"
+                        icon="sap-icon://menu2"
+                        type="Transparent"
+                        press=".onSideNavTogglePress">
+                        <layoutData>
+                            <OverflowToolbarLayoutData priority="NeverOverflow" />
+                        </layoutData>
+                    </Button>
+                    <ToolbarSpacer />
+                    <Title 
+                        text="{i18n>app.title}"
+                        level="H2" />
+                    <ToolbarSpacer />
+                    <Button
+                        id="userMenuButton"
+                        text="{userInfo>/username}"
+                        type="Transparent"
+                        press=".onUserMenuPress"
+                        icon="sap-icon://person-placeholder" />
+                </OverflowToolbar>
+            </tnt:header>
+            <tnt:sideContent>
+                <tnt:SideNavigation
+                    id="sideNavigation"
+                    expanded="true"
+                    selectedKey="{/selectedKey}"
+                    itemSelect=".onNavItemSelect">
+                    <tnt:NavigationList>
+                        <tnt:NavigationListItem
+                            text="{title}"
+                            icon="{icon}"
+                            key="{key}"
+                            items="{items}"
+                            expanded="true"
+                            visible="true">
+                            <tnt:NavigationListItem
+                                text="{title}"
+                                key="{key}" />
+                        </tnt:NavigationListItem>
+                    </tnt:NavigationList>
+                    <tnt:fixedItem>
+                        <tnt:NavigationList items="{/fixedNavigation}">
+                            <tnt:NavigationListItem
+                                text="{title}"
+                                icon="{icon}"
+                                key="{key}" />
+                        </tnt:NavigationList>
+                    </tnt:fixedItem>
+                </tnt:SideNavigation>
+            </tnt:sideContent>
+            <tnt:mainContents>
+                <NavContainer id="app" />
+            </tnt:mainContents>
+            <tnt:footer>
+                <Toolbar>
+                    <Text text="{i18n>app.footerText}" />
+                </Toolbar>
+            </tnt:footer>
+        </tnt:ToolPage>
+    </App>
+</mvc:View> 

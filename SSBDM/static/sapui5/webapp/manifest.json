@@ -1,0 +1,291 @@
+{
+  "sap.app": {
+    "id": "ssbdm",
+    "type": "application",
+    "title": "SSBDM - Solid State Building and Maintenance Manager",
+    "description": "Equipment maintenance and management application",
+    "applicationVersion": {
+      "version": "1.0.0"
+    },
+    "dataSources": {
+      "maintenanceAPI": {
+        "uri": "/api/maintenance/",
+        "type": "REST"
+      },
+      "equipmentAPI": {
+        "uri": "/api/equipment/",
+        "type": "REST"
+      },
+      "sparePartsAPI": {
+        "uri": "/api/spare-parts/",
+        "type": "REST"
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    },
+    "fullWidth": true
+  },
+  "sap.ui5": {
+    "rootView": {
+      "viewName": "ssbdm.view.App",
+      "type": "XML",
+      "id": "app"
+    },
+    "dependencies": {
+      "minUI5Version": "1.84.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.ui.layout": {},
+        "sap.f": {},
+        "sap.ui.table": {}
+      }
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "ssbdm.i18n.i18n"
+        }
+      },
+      "userInfo": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "defaultBindingMode": "OneWay"
+        }
+      },
+      "maintenance": {
+        "type": "sap.ui.model.json.JSONModel",
+        "dataSource": "maintenanceAPI"
+      },
+      "equipment": {
+        "type": "sap.ui.model.json.JSONModel",
+        "dataSource": "equipmentAPI"
+      },
+      "spareParts": {
+        "type": "sap.ui.model.json.JSONModel",
+        "dataSource": "sparePartsAPI"
+      }
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "viewPath": "ssbdm.view",
+        "controlId": "app",
+        "controlAggregation": "pages",
+        "async": true
+      },
+      "routes": [
+        {
+          "pattern": "",
+          "name": "home",
+          "target": "home"
+        },
+        {
+          "pattern": "equipment",
+          "name": "equipment",
+          "target": "equipment"
+        },
+        {
+          "pattern": "equipment/{id}",
+          "name": "equipmentDetail",
+          "target": "equipmentDetail"
+        },
+        {
+          "pattern": "equipment/create",
+          "name": "equipmentCreate",
+          "target": "equipmentCreate"
+        },
+        {
+          "pattern": "equipment/edit/{id}",
+          "name": "equipmentEdit",
+          "target": "equipmentEdit"
+        },
+        {
+          "pattern": "maintenance",
+          "name": "maintenance",
+          "target": "maintenance"
+        },
+        {
+          "pattern": "maintenance/log/{id}",
+          "name": "maintenanceLogDetail",
+          "target": "maintenanceLogDetail"
+        },
+        {
+          "pattern": "maintenance/create",
+          "name": "maintenanceCreate",
+          "target": "maintenanceCreate"
+        },
+        {
+          "pattern": "maintenance/edit/{id}",
+          "name": "maintenanceEdit",
+          "target": "maintenanceEdit"
+        },
+        {
+          "pattern": "maintenance/tasks",
+          "name": "maintenanceTasks",
+          "target": "maintenanceTasks"
+        },
+        {
+          "pattern": "maintenance/tasks/{id}",
+          "name": "maintenanceTaskDetail",
+          "target": "maintenanceTaskDetail"
+        },
+        {
+          "pattern": "spare-parts",
+          "name": "spareParts",
+          "target": "spareParts"
+        },
+        {
+          "pattern": "spare-parts/{id}",
+          "name": "sparePartDetail",
+          "target": "sparePartDetail"
+        },
+        {
+          "pattern": "spare-parts/create",
+          "name": "sparePartCreate",
+          "target": "sparePartCreate"
+        },
+        {
+          "pattern": "spare-parts/edit/{id}",
+          "name": "sparePartEdit",
+          "target": "sparePartEdit"
+        },
+        {
+          "pattern": "transactions",
+          "name": "transactions",
+          "target": "transactions"
+        },
+        {
+          "pattern": "transactions/{id}",
+          "name": "transactionDetail",
+          "target": "transactionDetail"
+        },
+        {
+          "pattern": "transactions/create",
+          "name": "transactionCreate",
+          "target": "transactionCreate"
+        },
+        {
+          "pattern": "settings",
+          "name": "settings",
+          "target": "settings"
+        },
+        {
+          "pattern": "help",
+          "name": "help",
+          "target": "help"
+        }
+      ],
+      "targets": {
+        "home": {
+          "viewPath": "ssbdm.view",
+          "viewName": "Home",
+          "viewLevel": 0
+        },
+        "equipment": {
+          "viewPath": "ssbdm.view.equipment",
+          "viewName": "Equipment",
+          "viewLevel": 1
+        },
+        "equipmentDetail": {
+          "viewPath": "ssbdm.view.equipment",
+          "viewName": "EquipmentDetail",
+          "viewLevel": 2
+        },
+        "equipmentCreate": {
+          "viewPath": "ssbdm.view.equipment",
+          "viewName": "EquipmentForm",
+          "viewLevel": 2
+        },
+        "equipmentEdit": {
+          "viewPath": "ssbdm.view.equipment",
+          "viewName": "EquipmentForm",
+          "viewLevel": 2
+        },
+        "maintenance": {
+          "viewPath": "ssbdm.view.maintenance",
+          "viewName": "Maintenance",
+          "viewLevel": 1
+        },
+        "maintenanceLogDetail": {
+          "viewPath": "ssbdm.view.maintenance",
+          "viewName": "MaintenanceLogDetail",
+          "viewLevel": 2
+        },
+        "maintenanceCreate": {
+          "viewPath": "ssbdm.view.maintenance",
+          "viewName": "MaintenanceForm",
+          "viewLevel": 2
+        },
+        "maintenanceEdit": {
+          "viewPath": "ssbdm.view.maintenance",
+          "viewName": "MaintenanceForm",
+          "viewLevel": 2
+        },
+        "maintenanceTasks": {
+          "viewPath": "ssbdm.view.maintenance",
+          "viewName": "Tasks",
+          "viewLevel": 1
+        },
+        "maintenanceTaskDetail": {
+          "viewPath": "ssbdm.view.maintenance",
+          "viewName": "TaskDetail",
+          "viewLevel": 2
+        },
+        "spareParts": {
+          "viewPath": "ssbdm.view.spareparts",
+          "viewName": "SpareParts",
+          "viewLevel": 1
+        },
+        "sparePartDetail": {
+          "viewPath": "ssbdm.view.spareparts",
+          "viewName": "SparePartDetail",
+          "viewLevel": 2
+        },
+        "sparePartCreate": {
+          "viewPath": "ssbdm.view.spareparts",
+          "viewName": "SparePartForm",
+          "viewLevel": 2
+        },
+        "sparePartEdit": {
+          "viewPath": "ssbdm.view.spareparts",
+          "viewName": "SparePartForm",
+          "viewLevel": 2
+        },
+        "transactions": {
+          "viewPath": "ssbdm.view.spareparts",
+          "viewName": "Transactions",
+          "viewLevel": 1
+        },
+        "transactionDetail": {
+          "viewPath": "ssbdm.view.spareparts",
+          "viewName": "TransactionDetail",
+          "viewLevel": 2
+        },
+        "transactionCreate": {
+          "viewPath": "ssbdm.view.spareparts",
+          "viewName": "TransactionForm",
+          "viewLevel": 2
+        },
+        "settings": {
+          "viewPath": "ssbdm.view",
+          "viewName": "Settings",
+          "viewLevel": 1
+        },
+        "help": {
+          "viewPath": "ssbdm.view",
+          "viewName": "Help",
+          "viewLevel": 1
+        }
+      }
+    }
+  }
+} 

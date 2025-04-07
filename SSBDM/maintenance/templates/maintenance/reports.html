@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Maintenance Reports - SSBDM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="fas fa-chart-bar"></i> Maintenance Reports</h1>
+        <p class="text-muted">View and generate maintenance reports</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Maintenance Summary Report Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Maintenance Summary Report</h5>
+            </div>
+            <div class="card-body">
+                <p>This report provides a summary of all maintenance activities over time, organized by equipment and maintenance type.</p>
+                <p>Use this report to analyze maintenance patterns and identify recurring issues.</p>
+                <ul>
+                    <li>View maintenance frequency by equipment</li>
+                    <li>Analyze maintenance types distribution</li>
+                    <li>Track maintenance costs and resources</li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'maintenance:maintenance_summary' %}" class="btn btn-primary">
+                    <i class="fas fa-file-alt"></i> View Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment Status Report Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Equipment Status Report</h5>
+            </div>
+            <div class="card-body">
+                <p>This report shows the current status of all equipment, including operational status, last maintenance date, and upcoming scheduled maintenance.</p>
+                <p>Use this report to plan maintenance activities and ensure equipment reliability.</p>
+                <ul>
+                    <li>Overview of equipment operational status</li>
+                    <li>Equipment requiring immediate attention</li>
+                    <li>Maintenance compliance tracking</li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'maintenance:equipment_status' %}" class="btn btn-primary">
+                    <i class="fas fa-file-alt"></i> View Report
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <!-- Custom Report Card -->
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Custom Report</h5>
+            </div>
+            <div class="card-body">
+                <p>Generate a custom report by selecting parameters and filters below:</p>
+                <form method="get" action="#">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="report_type" class="form-label">Report Type</label>
+                            <select class="form-select" id="report_type" name="report_type">
+                                <option value="maintenance">Maintenance Activity</option>
+                                <option value="equipment">Equipment Performance</option>
+                                <option value="cost">Cost Analysis</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="date_range" class="form-label">Date Range</label>
+                            <select class="form-select" id="date_range" name="date_range">
+                                <option value="7">Last 7 days</option>
+                                <option value="30" selected>Last 30 days</option>
+                                <option value="90">Last 90 days</option>
+                                <option value="365">Last year</option>
+                                <option value="custom">Custom range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="format" class="form-label">Export Format</label>
+                            <select class="form-select" id="format" name="format">
+                                <option value="web">Web View</option>
+                                <option value="pdf">PDF</option>
+                                <option value="csv">CSV</option>
+                                <option value="excel">Excel</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-file-export"></i> Generate Report
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,183 @@
+<div class="detail-panel">
+    <div class="detail-header d-flex justify-content-between align-items-center">
+        <h4 class="detail-title mb-0">
+            <i class="fas fa-cog me-2"></i>{{ equipment.code }} - {{ equipment.name }}
+        </h4>
+        <div class="detail-actions">
+            <a href="{% url 'equipment:equipment_update' equipment.id %}" class="btn btn-primary btn-icon">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'maintenance:log_add' %}?equipment={{ equipment.id }}" class="btn btn-success btn-icon">
+                <i class="fas fa-clipboard-list"></i> Log Maintenance
+            </a>
+        </div>
+    </div>
+    
+    <div class="detail-section">
+        <p class="text-muted">{{ equipment.description }}</p>
+        
+        <div class="detail-info-list">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="detail-info-item">
+                        <span class="detail-info-label">Type:</span>
+                        <span class="detail-info-value">{{ equipment.get_equipment_type_display }}</span>
+                    </div>
+                    <div class="detail-info-item">
+                        <span class="detail-info-label">Manufacturer:</span>
+                        <span class="detail-info-value">{{ equipment.manufacturer }}</span>
+                    </div>
+                    <div class="detail-info-item">
+                        <span class="detail-info-label">Model:</span>
+                        <span class="detail-info-value">{{ equipment.model }}</span>
+                    </div>
+                    <div class="detail-info-item">
+                        <span class="detail-info-label">Serial Number:</span>
+                        <span class="detail-info-value">{{ equipment.serial_number }}</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detail-info-item">
+                        <span class="detail-info-label">Area:</span>
+                        <span class="detail-info-value">
+                            {% if equipment.area %}
+                                <a href="{% url 'equipment:area_detail' equipment.area.id %}">{{ equipment.area.name }}</a>
+                            {% else %}
+                                <span class="text-muted">Not assigned</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="detail-info-item">
+                        <span class="detail-info-label">Installation Date:</span>
+                        <span class="detail-info-value">
+                            {% if equipment.installation_date %}
+                                {{ equipment.installation_date }}
+                            {% else %}
+                                <span class="text-muted">Not set</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="detail-info-item">
+                        <span class="detail-info-label">Last Maintenance:</span>
+                        <span class="detail-info-value">
+                            {% if equipment.last_maintenance_date %}
+                                {{ equipment.last_maintenance_date }}
+                            {% else %}
+                                <span class="text-muted">None recorded</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="detail-info-item">
+                        <span class="detail-info-label">Status:</span>
+                        <span class="detail-info-value">
+                            {% if equipment.status == "operational" %}
+                                <span class="status-badge status-operational"><i class="fas fa-check-circle"></i> Operational</span>
+                            {% elif equipment.status == "maintenance" %}
+                                <span class="status-badge status-maintenance"><i class="fas fa-wrench"></i> Under Maintenance</span>
+                            {% elif equipment.status == "out_of_service" %}
+                                <span class="status-badge status-out-of-service"><i class="fas fa-exclamation-circle"></i> Out of Service</span>
+                            {% else %}
+                                <span class="status-badge"><i class="fas fa-info-circle"></i> {{ equipment.status }}</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if specifications.exists %}
+    <div class="detail-section">
+        <h5 class="detail-section-title"><i class="fas fa-clipboard-list me-2"></i>Technical Specifications</h5>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Specification</th>
+                        <th>Value</th>
+                        <th>Unit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for spec in specifications %}
+                    <tr>
+                        <td>{{ spec.specification }}</td>
+                        <td>{{ spec.value }}</td>
+                        <td>{{ spec.unit }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if components.exists %}
+    <div class="detail-section">
+        <h5 class="detail-section-title"><i class="fas fa-puzzle-piece me-2"></i>Components</h5>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for component in components %}
+                    <tr>
+                        <td>{{ component.code }}</td>
+                        <td>{{ component.name }}</td>
+                        <td>{{ component.get_equipment_type_display }}</td>
+                        <td>
+                            {% if component.status == "operational" %}
+                                <span class="status-badge status-operational"><i class="fas fa-check-circle"></i> Operational</span>
+                            {% elif component.status == "maintenance" %}
+                                <span class="status-badge status-maintenance"><i class="fas fa-wrench"></i> Under Maintenance</span>
+                            {% elif component.status == "out_of_service" %}
+                                <span class="status-badge status-out-of-service"><i class="fas fa-exclamation-circle"></i> Out of Service</span>
+                            {% else %}
+                                <span class="status-badge"><i class="fas fa-info-circle"></i> {{ component.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'equipment:equipment_detail' component.id %}" class="btn-action" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if equipment.parent %}
+    <div class="detail-section">
+        <div class="alert alert-info">
+            <i class="fas fa-level-up-alt me-2"></i> <strong>Parent Equipment:</strong> 
+            <a href="{% url 'equipment:equipment_detail' equipment.parent.id %}">
+                {{ equipment.parent.code }} - {{ equipment.parent.name }}
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="detail-section">
+        <div class="btn-group w-100">
+            <a href="{% url 'documents:document_list' %}?equipment={{ equipment.id }}" class="btn btn-info btn-icon">
+                <i class="fas fa-file-alt"></i> Documents
+            </a>
+            <a href="{% url 'maintenance:log_list' %}?equipment={{ equipment.id }}" class="btn btn-primary btn-icon">
+                <i class="fas fa-clipboard-list"></i> Maintenance Logs
+            </a>
+            <a href="{% url 'spare_parts:spare_part_list' %}?equipment={{ equipment.id }}" class="btn btn-warning btn-icon">
+                <i class="fas fa-tools"></i> Spare Parts
+            </a>
+        </div>
+    </div>
+</div> 

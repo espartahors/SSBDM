@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Category: {{ category.name }} - SSBDM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Confirm Deletion
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h4 class="mb-3">Are you sure you want to delete the category "{{ category.name }}"?</h4>
+                    
+                    {% if has_spare_parts or has_subcategories %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>Warning!</strong>
+                        <ul class="mb-0 mt-2">
+                            {% if has_spare_parts %}
+                            <li>This category has {{ category.spare_parts.count }} spare parts associated with it.</li>
+                            {% endif %}
+                            {% if has_subcategories %}
+                            <li>This category has {{ category.get_children.count }} subcategories that will be deleted as well.</li>
+                            {% endif %}
+                            <li>Deleting this category will remove these associations.</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <p>This action cannot be undone. Please confirm that you want to permanently delete this category.</p>
+                    
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">Category Details</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p class="mb-1 fw-bold">Name:</p>
+                                    <p>{{ category.name }}</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1 fw-bold">Parent:</p>
+                                    <p>{% if category.parent %}{{ category.parent.name }}{% else %}<span class="text-muted">None</span>{% endif %}</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1 fw-bold">Created:</p>
+                                    <p>{{ category.created_at|date:"F j, Y" }}</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <p class="mb-1 fw-bold">Description:</p>
+                                    <p>{{ category.description|default:"No description provided." }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'spare_parts:category_detail' category.pk %}" class="btn btn-secondary me-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Delete Category
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

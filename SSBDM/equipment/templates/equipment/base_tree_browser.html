@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-container">
+    <div class="content-header">
+        <h1 class="content-title">
+            <i class="fas fa-sitemap"></i> {% block tree_title %}Tree Browser{% endblock %}
+        </h1>
+        <div class="content-actions">
+            {% block action_buttons %}{% endblock %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Search & Tree Panel -->
+        <div class="col-md-4 mb-4">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title">Browser</h5>
+                    <div class="card-tools">
+                        <div class="search-box">
+                            <input type="text" class="form-control" id="tree-search-input" placeholder="Search...">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0 tree-container">
+                    {% block tree %}{% endblock %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detail Panel -->
+        <div class="col-md-8 mb-4">
+            {% block detail_section %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="empty-state">
+                        <i class="fas fa-arrow-left empty-state-icon"></i>
+                        <p>Select an item from the tree to view details</p>
+                    </div>
+                </div>
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- This block is meant to be overridden by child templates -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize search functionality
+    const searchInput = document.getElementById('tree-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const tree = jQuery('#tree').jstree(true);
+            if (tree) {
+                tree.search(this.value);
+            }
+        });
+    }
+    
+    // Set tree container height based on window size
+    function setTreeContainerHeight() {
+        const treeContainers = document.querySelectorAll('.tree-container');
+        treeContainers.forEach(container => {
+            container.style.height = `${window.innerHeight - 250}px`;
+        });
+    }
+    
+    // Set initial height
+    setTreeContainerHeight();
+    
+    // Update height on window resize
+    window.addEventListener('resize', setTreeContainerHeight);
+});
+</script>
+{% block js %}{% endblock %}
+{% endblock %} 

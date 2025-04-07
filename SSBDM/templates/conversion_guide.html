@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}UI Conversion Guide{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="content-header">
+        <h1 class="content-title">UI Template Conversion Guide</h1>
+        <div class="content-actions">
+            <a href="{% url 'maintenance:dashboard' %}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Converting Existing Templates</h5>
+                    <div class="card-tools">
+                        <i class="fas fa-chevron-up toggle-icon"></i>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="lead">This guide shows how to convert existing templates to the new design system.</p>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Step-by-step approach:</strong> Follow these steps to convert any existing template to the new design.
+                    </div>
+
+                    <h4>1. Change the Base Template</h4>
+                    <div class="code-block">
+                        <p class="code-block-header">Before:</p>
+                        <pre><code>{{ "{% extends 'base.html' %}" }}</code></pre>
+                        
+                        <p class="code-block-header">After:</p>
+                        <pre><code>{{ "{% extends 'base.html' %}" }}</code></pre>
+                    </div>
+
+                    <h4>2. Update Page Structure</h4>
+                    <div class="code-block">
+                        <p class="code-block-header">Before:</p>
+                        <pre><code>{{ "{% block content %}" }}
+<div class="container mt-4">
+    <h2>Page Title</h2>
+    <div class="row">
+        <!-- content -->
+    </div>
+</div>
+{{ "{% endblock %}" }}</code></pre>
+                        
+                        <p class="code-block-header">After:</p>
+                        <pre><code>{{ "{% block content %}" }}
+<div class="content-container">
+    <div class="content-header">
+        <h1 class="content-title">Page Title</h1>
+        <div class="content-actions">
+            <!-- action buttons -->
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- content -->
+    </div>
+</div>
+{{ "{% endblock %}" }}</code></pre>
+                    </div>
+
+                    <h4>3. Update Cards</h4>
+                    <div class="code-block">
+                        <p class="code-block-header">Before:</p>
+                        <pre><code><div class="card">
+    <div class="card-header">Card Title</div>
+    <div class="card-body">
+        <!-- card content -->
+    </div>
+</div></code></pre>
+                        
+                        <p class="code-block-header">After:</p>
+                        <pre><code><div class="card">
+    <div class="card-header">
+        <h5 class="card-title">Card Title</h5>
+        <div class="card-tools">
+            <i class="fas fa-chevron-up toggle-icon"></i>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- card content -->
+    </div>
+</div></code></pre>
+                    </div>
+
+                    <h4>4. Update Buttons</h4>
+                    <div class="code-block">
+                        <p class="code-block-header">Before:</p>
+                        <pre><code><a href="#" class="btn btn-primary">Add New</a>
+<button type="submit" class="btn btn-success">Save</button></code></pre>
+                        
+                        <p class="code-block-header">After:</p>
+                        <pre><code><a href="#" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Add New
+</a>
+<button type="submit" class="btn btn-success">
+    <i class="fas fa-save"></i> Save
+</button></code></pre>
+                    </div>
+
+                    <h4>5. Update Status Indicators</h4>
+                    <div class="code-block">
+                        <p class="code-block-header">Before:</p>
+                        <pre><code><span class="badge bg-success">Operational</span>
+<span class="badge bg-warning">Maintenance</span>
+<span class="badge bg-danger">Out of Service</span></code></pre>
+                        
+                        <p class="code-block-header">After:</p>
+                        <pre><code><span class="status-badge status-operational">
+    <i class="fas fa-check-circle"></i> Operational
+</span>
+<span class="status-badge status-maintenance">
+    <i class="fas fa-tools"></i> Maintenance
+</span>
+<span class="status-badge status-outofservice">
+    <i class="fas fa-times-circle"></i> Out of Service
+</span></code></pre>
+                    </div>
+
+                    <h4>6. Update Tables</h4>
+                    <div class="code-block">
+                        <p class="code-block-header">Before:</p>
+                        <pre><code><table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Item Name</td>
+            <td>
+                <a href="#" class="btn btn-sm btn-info">View</a>
+                <a href="#" class="btn btn-sm btn-warning">Edit</a>
+            </td>
+        </tr>
+    </tbody>
+</table></code></pre>
+                        
+                        <p class="code-block-header">After:</p>
+                        <pre><code><div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Item Name</td>
+                <td class="text-end">
+                    <button class="btn btn-icon row-actions-toggle">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="row-actions-menu">
+                        <a href="#" class="row-action">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="#" class="row-action">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div></code></pre>
+                    </div>
+
+                    <h4>7. Update Forms</h4>
+                    <div class="code-block">
+                        <p class="code-block-header">Before:</p>
+                        <pre><code><form method="post">
+    {{ "{% csrf_token %}" }}
+    <div class="form-group mb-3">
+        <label for="name">Name</label>
+        <input type="text" class="form-control" id="name" name="name">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form></code></pre>
+                        
+                        <p class="code-block-header">After:</p>
+                        <pre><code><form method="post" class="needs-validation">
+    {{ "{% csrf_token %}" }}
+    <div class="form-group">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" class="form-control" id="name" name="name" required>
+        <div class="invalid-feedback">Please provide a name.</div>
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Submit
+        </button>
+    </div>
+</form></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title">Important Components to Update</h5>
+                    <div class="card-tools">
+                        <i class="fas fa-chevron-up toggle-icon"></i>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="list-group mb-4">
+                                <div class="list-group-item list-group-item-primary">
+                                    <h5 class="mb-1">Base Structure</h5>
+                                </div>
+                                <div class="list-group-item">
+                                    <i class="fas fa-check text-success me-2"></i> Page header with title and actions
+                                </div>
+                                <div class="list-group-item">
+                                    <i class="fas fa-check text-success me-2"></i> Content containers
+                                </div>
+                                <div class="list-group-item">
+                                    <i class="fas fa-check text-success me-2"></i> Card structures with toggle icons
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="list-group mb-4">
+                                <div class="list-group-item list-group-item-primary">
+                                    <h5 class="mb-1">Interactive Elements</h5>
+                                </div>
+                                <div class="list-group-item">
+                                    <i class="fas fa-check text-success me-2"></i> Buttons with icons
+                                </div>
+                                <div class="list-group-item">
+                                    <i class="fas fa-check text-success me-2"></i> Form controls with validation
+                                </div>
+                                <div class="list-group-item">
+                                    <i class="fas fa-check text-success me-2"></i> Table actions with dropdown menus
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Back to top button -->
+<button class="back-to-top">
+    <i class="fas fa-chevron-up"></i>
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize code toggles
+    document.addEventListener('DOMContentLoaded', function() {
+        const codeBlocks = document.querySelectorAll('.code-block');
+        
+        codeBlocks.forEach(block => {
+            const pre = block.querySelectorAll('pre');
+            if (pre.length > 1) {
+                const toggle = document.createElement('button');
+                toggle.classList.add('code-toggle');
+                toggle.innerHTML = '<i class="fas fa-exchange-alt"></i> Toggle';
+                
+                block.insertBefore(toggle, pre[0]);
+                
+                // Hide the "After" code initially
+                pre[1].style.display = 'none';
+                
+                toggle.addEventListener('click', function() {
+                    if (pre[0].style.display === 'none') {
+                        pre[0].style.display = 'block';
+                        pre[1].style.display = 'none';
+                    } else {
+                        pre[0].style.display = 'none';
+                        pre[1].style.display = 'block';
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %} 

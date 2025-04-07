@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Equipment Status Report - SSBDM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-file-alt"></i> Equipment Status Report</h1>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <div class="btn-group">
+            <a href="{% url 'maintenance:reports' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Reports
+            </a>
+            <button class="btn btn-outline-primary" onclick="window.print()">
+                <i class="fas fa-print"></i> Print
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="card-title mb-0">Filters</h5>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <span class="text-muted">Report generated: {% now "F j, Y H:i" %}</span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">Equipment Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">All Status</option>
+                    <option value="operational" {% if request.GET.status == 'operational' %}selected{% endif %}>Operational</option>
+                    <option value="maintenance" {% if request.GET.status == 'maintenance' %}selected{% endif %}>Under Maintenance</option>
+                    <option value="out_of_service" {% if request.GET.status == 'out_of_service' %}selected{% endif %}>Out of Service</option>
+                    <option value="retired" {% if request.GET.status == 'retired' %}selected{% endif %}>Retired</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="area" class="form-label">Area</label>
+                <select class="form-select" id="area" name="area">
+                    <option value="">All Areas</option>
+                    {% for area in areas %}
+                    <option value="{{ area.id }}" {% if request.GET.area == area.id|stringformat:"i" %}selected{% endif %}>{{ area.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="equipment_type" class="form-label">Equipment Type</label>
+                <select class="form-select" id="equipment_type" name="equipment_type">
+                    <option value="">All Types</option>
+                    <option value="machine" {% if request.GET.equipment_type == 'machine' %}selected{% endif %}>Machine</option>
+                    <option value="tool" {% if request.GET.equipment_type == 'tool' %}selected{% endif %}>Tool</option>
+                    <option value="vehicle" {% if request.GET.equipment_type == 'vehicle' %}selected{% endif %}>Vehicle</option>
+                    <option value="instrument" {% if request.GET.equipment_type == 'instrument' %}selected{% endif %}>Instrument</option>
+                    <option value="component" {% if request.GET.equipment_type == 'component' %}selected{% endif %}>Component</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+                <a href="{% url 'maintenance:equipment_status' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-undo"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Status Summary -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Operational</h5>
+                <div class="display-4">{{ operational_count }}</div>
+                <p class="card-text">Fully operational equipment</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">Under Maintenance</h5>
+                <div class="display-4">{{ maintenance_count }}</div>
+                <p class="card-text">Equipment under maintenance</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <h5 class="card-title">Out of Service</h5>
+                <div class="display-4">{{ out_of_service_count }}</div>
+                <p class="card-text">Equipment out of service</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-secondary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Retired</h5>
+                <div class="display-4">{{ retired_count }}</div>
+                <p class="card-text">Retired equipment</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Equipment Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Equipment Status</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Area</th>
+                        <th>Status</th>
+                        <th>Last Maintenance</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eq in equipment %}
+                    <tr>
+                        <td>{{ eq.code }}</td>
+                        <td>
+                            <a href="{% url 'equipment:equipment_detail' eq.pk %}">
+                                {{ eq.name }}
+                            </a>
+                        </td>
+                        <td>{{ eq.get_equipment_type_display }}</td>
+                        <td>
+                            {% if eq.area %}
+                                <a href="{% url 'equipment:area_detail' eq.area.pk %}">
+                                    {{ eq.area.name }}
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status-indicator status-{{ eq.status }}"></span>
+                            {{ eq.get_status_display }}
+                        </td>
+                        <td>
+                            {% if eq.last_maintenance_date %}
+                                {{ eq.last_maintenance_date }}
+                            {% else %}
+                                Not available
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'equipment:equipment_detail' eq.pk %}" class="btn btn-info" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'maintenance:log_add' %}?equipment={{ eq.id }}" class="btn btn-primary" title="Add Maintenance">
+                                    <i class="fas fa-wrench"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center p-4">
+                            <div class="text-muted">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <p>No equipment found matching the selected filters.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

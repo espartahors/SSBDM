@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Specification: {{ specification.name }} - SSBDM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h5>
+            </div>
+            <div class="card-body">
+                <h4 class="mb-4">Are you sure you want to delete the specification "{{ specification.name }}"?</h4>
+                
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-exclamation-circle"></i> Warning!</h5>
+                    <p>This will permanently delete this technical specification from the equipment. All associated data will be lost.</p>
+                    <p class="mb-0"><strong>This action cannot be undone.</strong></p>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">Specification Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Name:</strong> {{ specification.name }}</p>
+                                <p><strong>Value:</strong> {{ specification.value }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Unit:</strong> {% if specification.unit %}{{ specification.unit }}{% else %}None{% endif %}</p>
+                                <p><strong>Last Updated:</strong> {{ specification.updated_at }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">Equipment Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Code:</strong> {{ specification.equipment.code }}</p>
+                                <p><strong>Name:</strong> {{ specification.equipment.name }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Type:</strong> {{ specification.equipment.get_equipment_type_display }}</p>
+                                <p><strong>Status:</strong> {{ specification.equipment.get_status_display }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'equipment:technical_specification_detail' specification.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Confirm Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

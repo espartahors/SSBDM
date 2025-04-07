@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mvc:View
+    controllerName="ssbdm.controller.maintenance.Maintenance"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.f"
+    xmlns:layout="sap.ui.layout"
+    xmlns:semantic="sap.f.semantic"
+    displayBlock="true">
+    
+    <Page id="maintenancePage" 
+          title="{i18n>maintenanceTitle}"
+          showNavButton="true"
+          navButtonPress=".onNavBack">
+        <headerContent>
+            <Button 
+                text="{i18n>createLog}" 
+                icon="sap-icon://add" 
+                type="Emphasized"
+                visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} || ${userInfo>/isMaintenanceUser} }"
+                press=".onCreateLog" />
+        </headerContent>
+        
+        <f:DynamicPage id="dynamicPageId" headerExpanded="{view>/headerExpanded}">
+            <f:title>
+                <f:DynamicPageTitle>
+                    <f:heading>
+                        <Title text="{i18n>maintenanceLogs}" />
+                    </f:heading>
+                    <f:expandedContent>
+                        <Text text="{i18n>maintenanceLogsDescription}" />
+                    </f:expandedContent>
+                    <f:actions>
+                        <OverflowToolbar>
+                            <Button 
+                                icon="sap-icon://action-settings" 
+                                type="Transparent"
+                                tooltip="{i18n>toggleFilterBar}"
+                                press=".onToggleFilterBar" />
+                            <Button 
+                                icon="sap-icon://sort" 
+                                type="Transparent"
+                                tooltip="{i18n>sort}"
+                                press=".onOpenSortDialog" />
+                            <Button 
+                                icon="sap-icon://refresh" 
+                                type="Transparent"
+                                tooltip="{i18n>refresh}"
+                                press=".onRefresh" />
+                        </OverflowToolbar>
+                    </f:actions>
+                </f:DynamicPageTitle>
+            </f:title>
+            
+            <f:header>
+                <f:DynamicPageHeader pinnable="true">
+                    <VBox>
+                        <HBox alignItems="Center" justifyContent="SpaceBetween" class="sapUiSmallMarginBottom">
+                            <VBox>
+                                <Label text="{i18n>searchMaintenance}" />
+                                <SearchField
+                                    id="searchField"
+                                    width="100%"
+                                    search=".onSearch"
+                                    liveChange=".onSearchLiveChange" />
+                            </VBox>
+                            <VBox class="sapUiSmallMarginBegin">
+                                <Label text="{i18n>status}" />
+                                <ComboBox
+                                    id="statusFilter"
+                                    items="{view>/statusOptions}"
+                                    selectionChange=".onFilterChange"
+                                    selectedKey="">
+                                    <core:Item key="{view>key}" text="{view>text}" />
+                                </ComboBox>
+                            </VBox>
+                            <VBox class="sapUiSmallMarginBegin">
+                                <Label text="{i18n>maintenanceType}" />
+                                <ComboBox
+                                    id="typeFilter"
+                                    items="{view>/typeOptions}"
+                                    selectionChange=".onFilterChange"
+                                    selectedKey="">
+                                    <core:Item key="{view>key}" text="{view>text}" />
+                                </ComboBox>
+                            </VBox>
+                            <VBox class="sapUiSmallMarginBegin">
+                                <Label text="{i18n>dateRange}" />
+                                <DateRangeSelection
+                                    id="dateRangeFilter"
+                                    change=".onDateRangeChange"
+                                    delimiter="-" />
+                            </VBox>
+                            <VBox class="sapUiSmallMarginBegin">
+                                <Button
+                                    text="{i18n>resetFilters}"
+                                    type="Transparent"
+                                    press=".onResetFilters" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </f:DynamicPageHeader>
+            </f:header>
+            
+            <f:content>
+                <Table
+                    id="maintenanceTable"
+                    inset="false"
+                    items="{
+                        path: 'view>/maintenanceLogs',
+                        sorter: {
+                            path: 'date',
+                            descending: true
+                        }
+                    }"
+                    noDataText="{i18n>noMaintenanceLogs}"
+                    growing="true"
+                    growingScrollToLoad="true"
+                    updateFinished=".onUpdateFinished"
+                    busyIndicatorDelay="0"
+                    sticky="ColumnHeaders,HeaderToolbar"
+                    class="sapUiResponsiveMargin">
+                    <headerToolbar>
+                        <OverflowToolbar>
+                            <content>
+                                <ToolbarSpacer />
+                                <Text id="tableHeader" text="{i18n>maintenanceLogsCount} ({view>/maintenanceCount})" />
+                            </content>
+                        </OverflowToolbar>
+                    </headerToolbar>
+                    <columns>
+                        <Column width="12rem">
+                            <Text text="{i18n>date}" />
+                        </Column>
+                        <Column width="14rem">
+                            <Text text="{i18n>equipment}" />
+                        </Column>
+                        <Column width="10rem">
+                            <Text text="{i18n>type}" />
+                        </Column>
+                        <Column minScreenWidth="Tablet" demandPopin="true">
+                            <Text text="{i18n>description}" />
+                        </Column>
+                        <Column width="9rem">
+                            <Text text="{i18n>technician}" />
+                        </Column>
+                        <Column width="9rem">
+                            <Text text="{i18n>status}" />
+                        </Column>
+                        <Column width="8rem">
+                            <Text text="{i18n>actions}" />
+                        </Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem type="Navigation" press=".onMaintenanceLogPress">
+                            <cells>
+                                <Text text="{view>date}" />
+                                <Text text="{view>equipment_name} ({view>equipment_code})" />
+                                <Text text="{view>maintenance_type}" />
+                                <Text text="{view>description}" />
+                                <Text text="{view>technician_name}" />
+                                <ObjectStatus text="{view>status}" 
+                                    state="{= ${view>status} === 'completed' ? 'Success' : 
+                                            ${view>status} === 'in_progress' ? 'Warning' : 
+                                            ${view>status} === 'pending' ? 'Information' : 'None' }" />
+                                <HBox>
+                                    <Button 
+                                        icon="sap-icon://edit" 
+                                        type="Transparent"
+                                        tooltip="{i18n>edit}"
+                                        press=".onEditMaintenanceLog" 
+                                        visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} || (${userInfo>/isMaintenanceUser} &amp;&amp; ${view>technician_id} === ${userInfo>/userId})}" />
+                                    <Button 
+                                        icon="sap-icon://delete" 
+                                        type="Transparent"
+                                        tooltip="{i18n>delete}"
+                                        press=".onDeleteMaintenanceLog" 
+                                        visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} }" />
+                                </HBox>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </f:content>
+        </f:DynamicPage>
+    </Page>
+</mvc:View> 

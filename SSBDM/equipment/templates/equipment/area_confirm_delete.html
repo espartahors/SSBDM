@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Area: {{ area.name }} - SSBDM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h5>
+            </div>
+            <div class="card-body">
+                <h4 class="mb-4">Are you sure you want to delete the area "{{ area.name }}"?</h4>
+                
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-exclamation-circle"></i> Warning!</h5>
+                    {% if area.equipment.count > 0 or area.children.count > 0 %}
+                    <p class="text-danger"><strong>This area cannot be deleted because it has associated equipment or sub-areas.</strong></p>
+                    <p>You must first remove or reassign:</p>
+                    <ul>
+                        {% if area.children.count > 0 %}
+                        <li>{{ area.children.count }} sub-area(s)</li>
+                        {% endif %}
+                        {% if area.equipment.count > 0 %}
+                        <li>{{ area.equipment.count }} equipment item(s)</li>
+                        {% endif %}
+                    </ul>
+                    {% else %}
+                    <p>This will permanently delete this area. Any equipment or sub-areas previously assigned to this area will be unassigned.</p>
+                    <p class="mb-0"><strong>This action cannot be undone.</strong></p>
+                    {% endif %}
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">Area Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Code:</strong> {{ area.code }}</p>
+                                <p><strong>Name:</strong> {{ area.name }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Parent Area:</strong> {% if area.parent %}{{ area.parent.name }}{% else %}None (Root Area){% endif %}</p>
+                                <p><strong>Created:</strong> {{ area.created_at }}</p>
+                            </div>
+                        </div>
+                        {% if area.description %}
+                        <hr>
+                        <p><strong>Description:</strong> {{ area.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'equipment:area_detail' area.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger" {% if area.equipment.count > 0 or area.children.count > 0 %}disabled{% endif %}>
+                            <i class="fas fa-trash"></i> Confirm Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

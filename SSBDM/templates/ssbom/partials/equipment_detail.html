@@ -1,0 +1,192 @@
+<div class="detail-container">
+    {% if equipment.image %}
+    <div class="detail-image">
+        <img src="{{ equipment.image.url }}" alt="{{ equipment.name }}">
+    </div>
+    {% else %}
+    <div class="detail-placeholder">
+        <i class="fas fa-tools fa-3x"></i>
+    </div>
+    {% endif %}
+    
+    <div class="detail-info">
+        <h4 class="mb-3">Equipment Information</h4>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="detail-info-item">
+                    <span class="detail-info-label">Equipment Name</span>
+                    <div class="detail-info-value">{{ equipment.name }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="detail-info-item">
+                    <span class="detail-info-label">Code</span>
+                    <div class="detail-info-value">{{ equipment.code }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="detail-info-item">
+                    <span class="detail-info-label">Area</span>
+                    <div class="detail-info-value">
+                        <a href="#" onclick="loadAreaDetails('{{ equipment.area.id }}'); return false;">
+                            {{ equipment.area.name }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="detail-info-item">
+                    <span class="detail-info-label">Status</span>
+                    <div class="detail-info-value">
+                        <span class="status-badge status-{{ equipment.status|lower }}">
+                            <i class="fas fa-circle"></i> {{ equipment.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="detail-info-item">
+                    <span class="detail-info-label">Manufacturer</span>
+                    <div class="detail-info-value">{{ equipment.manufacturer|default:"N/A" }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="detail-info-item">
+                    <span class="detail-info-label">Model</span>
+                    <div class="detail-info-value">{{ equipment.model|default:"N/A" }}</div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="detail-info-item">
+                    <span class="detail-info-label">Description</span>
+                    <div class="detail-info-value">{{ equipment.description|default:"No description provided." }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <a href="{% url 'equipment:equipment_detail' equipment.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-external-link-alt me-1"></i> View Full Details
+            </a>
+        </div>
+    </div>
+    
+    <div class="detail-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Related Spare Parts</h4>
+        </div>
+        
+        {% if spare_parts %}
+        <div class="table-responsive">
+            <table class="data-table data-table-compact">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Category</th>
+                        <th>Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for part in spare_parts %}
+                    <tr>
+                        <td>{{ part.name }}</td>
+                        <td>{{ part.code }}</td>
+                        <td>{{ part.category.name }}</td>
+                        <td>
+                            <span class="status-badge {% if part.current_stock <= part.minimum_stock %}status-low-stock{% elif part.current_stock == 0 %}status-out-of-stock{% else %}status-in-stock{% endif %}">
+                                {{ part.current_stock }} {{ part.unit }}
+                            </span>
+                        </td>
+                        <td class="action-cell">
+                            <div class="action-group">
+                                {% if bom_relationships %}
+                                    {% for rel in bom_relationships %}
+                                        {% if rel.spare_part.id == part.id %}
+                                            <span class="badge bg-secondary me-1" title="Relationship: {{ rel.get_relationship_type_display }}">
+                                                {{ rel.get_relationship_type_display|slice:":1" }}
+                                                {% if rel.quantity > 1 %}
+                                                ({{ rel.quantity }})
+                                                {% endif %}
+                                            </span>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                <button type="button" class="btn-action" onclick="loadSparePartDetails('{{ part.id }}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-cogs"></i>
+            </div>
+            <p>No spare parts associated with this equipment</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="detail-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Documents Related to this Equipment</h4>
+        </div>
+        
+        {% if documents %}
+        <div class="table-responsive">
+            <table class="data-table data-table-compact">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for document in documents %}
+                    <tr>
+                        <td>{{ document.title }}</td>
+                        <td>{{ document.get_document_type_display }}</td>
+                        <td>{{ document.upload_date|date:"d/m/Y" }}</td>
+                        <td class="action-cell">
+                            <div class="action-group">
+                                {% if document_relationships %}
+                                    {% for rel in document_relationships %}
+                                        {% if rel.document.id == document.id %}
+                                            <span class="badge bg-secondary me-1" title="Relationship: {{ rel.get_relationship_type_display }}">
+                                                {{ rel.get_relationship_type_display|slice:":1" }}
+                                            </span>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                <button type="button" class="btn-action" onclick="loadDocumentDetails('{{ document.id }}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="{{ document.file.url }}" target="_blank" class="btn-action">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <p>No documents related to this equipment</p>
+        </div>
+        {% endif %}
+    </div>
+</div> 

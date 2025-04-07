@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Login - SSBDM{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0 text-center">SSBDM - Login</h3>
+        </div>
+        <div class="card-body">
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    Your username and password didn't match. Please try again.
+                </div>
+            {% endif %}
+
+            {% if next %}
+                {% if user.is_authenticated %}
+                    <div class="alert alert-warning">
+                        Your account doesn't have access to this page. To proceed,
+                        please login with an account that has access.
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        Please login to see this page.
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="username" class="form-label">{{ form.username.label_tag }}</label>
+                    <input type="text" name="username" id="username" class="form-control" autofocus required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">{{ form.password.label_tag }}</label>
+                    <input type="password" name="password" id="password" class="form-control" required>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+                <input type="hidden" name="next" value="{{ next }}">
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Spare Parts Inventory - SSBDM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-cogs"></i> Spare Parts Inventory</h1>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'spare_parts:spare_part_add' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Part
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary text-white dashboard-widget">
+            <div class="card-body">
+                <h5 class="card-title">Total Parts</h5>
+                <div class="quick-stats">{{ total_parts }}</div>
+                <div class="dashboard-widget-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-warning text-white dashboard-widget">
+            <div class="card-body">
+                <h5 class="card-title">Low Stock</h5>
+                <div class="quick-stats">{{ low_stock }}</div>
+                <div class="dashboard-widget-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-danger text-white dashboard-widget">
+            <div class="card-body">
+                <h5 class="card-title">Out of Stock</h5>
+                <div class="quick-stats">{{ out_of_stock }}</div>
+                <div class="dashboard-widget-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info text-white dashboard-widget">
+            <div class="card-body">
+                <h5 class="card-title">Actions</h5>
+                <div class="mt-2">
+                    <a href="{% url 'spare_parts:reorder_list' %}" class="btn btn-sm btn-light">Reorder List</a>
+                </div>
+                <div class="dashboard-widget-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="card-title mb-0">Parts Inventory</h5>
+            </div>
+            <div class="col-md-6">
+                <form method="get" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search parts..." value="{{ request.GET.search }}">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">Search</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Part Number</th>
+                        <th>Description</th>
+                        <th>Equipment</th>
+                        <th>Stock</th>
+                        <th>Minimum</th>
+                        <th>Status</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for part in spare_parts %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'spare_parts:spare_part_detail' part.pk %}">
+                                {{ part.part_number }}
+                            </a>
+                        </td>
+                        <td>{{ part.description|truncatechars:50 }}</td>
+                        <td>
+                            {% if part.equipment %}
+                                <a href="{% url 'equipment:equipment_detail' part.equipment.pk %}">
+                                    {{ part.equipment.name }}
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ part.quantity_in_stock }}</td>
+                        <td>{{ part.minimum_stock }}</td>
+                        <td>
+                            {% if part.stock_status == 'out_of_stock' %}
+                                <span class="badge bg-danger">Out of Stock</span>
+                            {% elif part.stock_status == 'low_stock' %}
+                                <span class="badge bg-warning">Low Stock</span>
+                            {% else %}
+                                <span class="badge bg-success">In Stock</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ part.location }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'spare_parts:spare_part_detail' part.pk %}" class="btn btn-info" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'spare_parts:spare_part_edit' part.pk %}" class="btn btn-warning" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'spare_parts:spare_part_delete' part.pk %}" class="btn btn-danger" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                <a href="{% url 'spare_parts:transaction_add' %}?spare_part={{ part.pk }}" class="btn btn-success" title="Add Transaction">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center p-4">
+                            <div class="text-muted">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <p>No spare parts found.</p>
+                                <a href="{% url 'spare_parts:spare_part_add' %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> Add New Part
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if is_paginated %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">First</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Last</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">Last</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

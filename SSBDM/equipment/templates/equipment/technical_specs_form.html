@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Edit Specification{% else %}Add Specification{% endif %} - SSBDM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1>
+            <i class="fas fa-clipboard-list"></i> 
+            {% if form.instance.pk %}
+                Edit Technical Specification
+            {% else %}
+                Add Technical Specification
+            {% endif %}
+        </h1>
+        <p class="text-muted">
+            Equipment: <a href="{% url 'equipment:equipment_detail' form.instance.equipment.pk %}">{{ form.instance.equipment.name }}</a>
+        </p>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{% url 'equipment:equipment_detail' form.instance.equipment.pk %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Equipment
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Specification Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" class="form">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            {{ form.specification|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            {{ form.value|as_crispy_field }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.unit|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'equipment:equipment_detail' form.instance.equipment.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Specification
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Help Information</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    <i class="fas fa-info-circle me-2"></i> Technical specifications define important parameters for the equipment.
+                </p>
+                <hr>
+                <div class="mb-3">
+                    <h6>Specification</h6>
+                    <p class="small text-muted">The name of the specification (e.g., Weight, Power Rating, Dimensions).</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Value</h6>
+                    <p class="small text-muted">The measured or rated value of the specification.</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Unit</h6>
+                    <p class="small text-muted">The unit of measurement (e.g., kg, kW, mm).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

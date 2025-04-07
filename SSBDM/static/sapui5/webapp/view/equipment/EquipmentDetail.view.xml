@@ -1,0 +1,276 @@
+<mvc:View
+    controllerName="ssbdm.controller.equipment.EquipmentDetail"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.f"
+    xmlns:card="sap.f.cards"
+    xmlns:layout="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    displayBlock="true">
+    
+    <Page id="equipmentDetailPage" 
+          title="{i18n>equipmentDetailTitle}"
+          showNavButton="true"
+          navButtonPress=".onNavBack">
+        <headerContent>
+            <Button 
+                text="{i18n>editEquipment}" 
+                icon="sap-icon://edit" 
+                type="Emphasized"
+                visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} }"
+                press=".onEditEquipment" />
+        </headerContent>
+        
+        <f:DynamicPage id="dynamicPageId" headerExpanded="true">
+            <f:title>
+                <f:DynamicPageTitle>
+                    <f:heading>
+                        <Title text="{equipment>/name} ({equipment>/code})" />
+                    </f:heading>
+                    <f:expandedContent>
+                        <Text text="{equipment>/model} - {equipment>/manufacturer}" />
+                    </f:expandedContent>
+                    <f:snappedContent>
+                        <Text text="{equipment>/model} - {equipment>/manufacturer}" />
+                    </f:snappedContent>
+                    <f:actions>
+                        <OverflowToolbar>
+                            <Button 
+                                text="{i18n>createMaintenanceLog}" 
+                                icon="sap-icon://add-activity" 
+                                type="Ghost"
+                                visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} || ${userInfo>/isMaintenanceUser} }"
+                                press=".onCreateMaintenanceLog" />
+                            <Button 
+                                icon="sap-icon://refresh" 
+                                type="Ghost"
+                                tooltip="{i18n>refresh}"
+                                press=".onRefresh" />
+                        </OverflowToolbar>
+                    </f:actions>
+                </f:DynamicPageTitle>
+            </f:title>
+            
+            <f:header>
+                <f:DynamicPageHeader pinnable="true">
+                    <layout:HorizontalLayout allowWrapping="true">
+                        <layout:VerticalLayout class="sapUiMediumMarginEnd">
+                            <ObjectStatus title="{i18n>status}" text="{equipment>/status}" 
+                                state="{= ${equipment>/status} === 'active' ? 'Success' : 
+                                        ${equipment>/status} === 'maintenance' ? 'Warning' : 
+                                        ${equipment>/status} === 'inactive' ? 'Error' : 'None' }" />
+                            <ObjectStatus title="{i18n>installationDate}" text="{equipment>/installation_date}" />
+                        </layout:VerticalLayout>
+                        
+                        <layout:VerticalLayout class="sapUiMediumMarginEnd">
+                            <ObjectStatus title="{i18n>area}" text="{equipment>/area_name}" />
+                            <ObjectStatus title="{i18n>serialNumber}" text="{equipment>/serial_number}" />
+                        </layout:VerticalLayout>
+                        
+                        <layout:VerticalLayout>
+                            <ObjectStatus title="{i18n>lastMaintenance}" text="{equipment>/last_maintenance_date}" />
+                            <ObjectStatus title="{i18n>nextMaintenance}" text="{equipment>/next_maintenance_date}" 
+                                state="{= ${equipment>/maintenance_due} ? 'Warning' : 'None' }" />
+                        </layout:VerticalLayout>
+                    </layout:HorizontalLayout>
+                </f:DynamicPageHeader>
+            </f:header>
+            
+            <f:content>
+                <IconTabBar id="idIconTabBar" 
+                            expanded="{device>/isNoPhone}" 
+                            class="sapUiResponsiveContentPadding">
+                    <items>
+                        <IconTabFilter icon="sap-icon://hint" tooltip="{i18n>details}" text="{i18n>details}">
+                            <form:SimpleForm
+                                editable="false"
+                                layout="ResponsiveGridLayout"
+                                labelSpanXL="4"
+                                labelSpanL="4" 
+                                labelSpanM="4"
+                                labelSpanS="12"
+                                adjustLabelSpan="false"
+                                emptySpanXL="0"
+                                emptySpanL="0" 
+                                emptySpanM="0"
+                                emptySpanS="0"
+                                columnsXL="2"
+                                columnsL="2" 
+                                columnsM="1">
+                                <form:content>
+                                    <core:Title text="{i18n>basicInfo}" />
+                                    <Label text="{i18n>code}" />
+                                    <Text text="{equipment>/code}" />
+                                    <Label text="{i18n>name}" />
+                                    <Text text="{equipment>/name}" />
+                                    <Label text="{i18n>model}" />
+                                    <Text text="{equipment>/model}" />
+                                    <Label text="{i18n>manufacturer}" />
+                                    <Text text="{equipment>/manufacturer}" />
+                                    <Label text="{i18n>serialNumber}" />
+                                    <Text text="{equipment>/serial_number}" />
+                                    
+                                    <core:Title text="{i18n>additionalInfo}" />
+                                    <Label text="{i18n>area}" />
+                                    <Text text="{equipment>/area_name}" />
+                                    <Label text="{i18n>status}" />
+                                    <Text text="{equipment>/status}" />
+                                    <Label text="{i18n>installationDate}" />
+                                    <Text text="{equipment>/installation_date}" />
+                                    <Label text="{i18n>description}" />
+                                    <Text text="{equipment>/description}" />
+                                </form:content>
+                            </form:SimpleForm>
+                        </IconTabFilter>
+                        
+                        <IconTabFilter icon="sap-icon://wrench" tooltip="{i18n>specifications}" text="{i18n>specifications}">
+                            <Table 
+                                id="specificationsTable"
+                                items="{equipment>/specifications}"
+                                noDataText="{i18n>noSpecifications}"
+                                growing="true"
+                                growingThreshold="5"
+                                growingScrollToLoad="true">
+                                <columns>
+                                    <Column>
+                                        <Text text="{i18n>specName}" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="{i18n>specValue}" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="{i18n>specUnit}" />
+                                    </Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem type="Active">
+                                        <cells>
+                                            <Text text="{equipment>name}" />
+                                            <Text text="{equipment>value}" />
+                                            <Text text="{equipment>unit}" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </IconTabFilter>
+                        
+                        <IconTabFilter icon="sap-icon://activities" tooltip="{i18n>maintenanceLogs}" text="{i18n>maintenanceLogs}" count="{equipment>/maintenance_logs_count}">
+                            <Table 
+                                id="maintenanceLogsTable"
+                                items="{equipment>/maintenance_logs}"
+                                noDataText="{i18n>noMaintenanceLogs}"
+                                growing="true"
+                                growingThreshold="5"
+                                growingScrollToLoad="true">
+                                <columns>
+                                    <Column>
+                                        <Text text="{i18n>date}" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="{i18n>type}" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="{i18n>technician}" />
+                                    </Column>
+                                    <Column minScreenWidth="Tablet">
+                                        <Text text="{i18n>description}" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="{i18n>status}" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="" />
+                                    </Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem type="Navigation" press=".onMaintenanceLogPress">
+                                        <cells>
+                                            <Text text="{equipment>date}" />
+                                            <Text text="{equipment>maintenance_type}" />
+                                            <Text text="{equipment>technician_name}" />
+                                            <Text text="{equipment>description}" />
+                                            <ObjectStatus text="{equipment>status}" 
+                                                state="{= ${equipment>status} === 'completed' ? 'Success' : 
+                                                        ${equipment>status} === 'in_progress' ? 'Warning' : 
+                                                        ${equipment>status} === 'pending' ? 'Information' : 'None' }" />
+                                            <Button 
+                                                icon="sap-icon://delete" 
+                                                type="Transparent"
+                                                visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} }"
+                                                press=".onDeleteMaintenanceLog" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </IconTabFilter>
+                        
+                        <IconTabFilter icon="sap-icon://document" tooltip="{i18n>documents}" text="{i18n>documents}" count="{equipment>/documents_count}">
+                            <Table 
+                                id="documentsTable"
+                                items="{equipment>/documents}"
+                                noDataText="{i18n>noDocuments}"
+                                growing="true"
+                                growingThreshold="5"
+                                growingScrollToLoad="true">
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <content>
+                                            <Title text="{i18n>documents}" level="H2"/>
+                                            <ToolbarSpacer/>
+                                            <Button 
+                                                icon="sap-icon://add" 
+                                                text="{i18n>addDocument}"
+                                                visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} }"
+                                                press=".onAddDocument" />
+                                        </content>
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column>
+                                        <Text text="{i18n>documentName}" />
+                                    </Column>
+                                    <Column minScreenWidth="Tablet">
+                                        <Text text="{i18n>documentType}" />
+                                    </Column>
+                                    <Column minScreenWidth="Tablet">
+                                        <Text text="{i18n>uploadDate}" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="{i18n>uploadedBy}" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="" />
+                                    </Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem type="Active" press=".onDocumentPress">
+                                        <cells>
+                                            <Text text="{equipment>name}" />
+                                            <Text text="{equipment>document_type}" />
+                                            <Text text="{equipment>upload_date}" />
+                                            <Text text="{equipment>uploaded_by_name}" />
+                                            <HBox>
+                                                <Button 
+                                                    icon="sap-icon://download" 
+                                                    type="Transparent"
+                                                    tooltip="{i18n>download}"
+                                                    press=".onDownloadDocument" />
+                                                <Button 
+                                                    icon="sap-icon://delete" 
+                                                    type="Transparent"
+                                                    tooltip="{i18n>delete}"
+                                                    visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} }"
+                                                    press=".onDeleteDocument" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </IconTabFilter>
+                    </items>
+                </IconTabBar>
+            </f:content>
+        </f:DynamicPage>
+    </Page>
+</mvc:View> 

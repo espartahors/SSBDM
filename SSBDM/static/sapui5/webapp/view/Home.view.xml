@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mvc:View
+    controllerName="ssbdm.controller.Home"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns:card="sap.f.cards"
+    xmlns:grid="sap.ui.layout.cssgrid"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+    
+    <Page id="homePage" title="{i18n>homeTitle}">
+        <content>
+            <VBox class="sapUiContentPadding">
+                <Title text="{i18n>dashboardTitle}" class="sapUiSmallMarginBottom" />
+                <f:GridContainer>
+                    <!-- Equipment Card -->
+                    <f:Card width="20rem" class="sapUiSmallMarginBottom sapUiSmallMarginEnd">
+                        <f:header>
+                            <card:Header
+                                title="{i18n>equipmentOverviewTitle}"
+                                subtitle="{i18n>lastUpdated}: {equipment>/lastUpdate}"
+                                iconSrc="sap-icon://machine" />
+                        </f:header>
+                        <f:content>
+                            <List>
+                                <StandardListItem
+                                    title="{i18n>totalEquipment}"
+                                    info="{equipment>/totalCount}"
+                                    infoState="None" />
+                                <StandardListItem
+                                    title="{i18n>activeEquipment}"
+                                    info="{equipment>/activeCount}"
+                                    infoState="Success" />
+                                <StandardListItem
+                                    title="{i18n>underMaintenance}"
+                                    info="{equipment>/maintenanceCount}"
+                                    infoState="Warning" />
+                            </List>
+                            <HBox justifyContent="End" class="sapUiSmallMarginEnd sapUiSmallMarginBottom">
+                                <Button text="{i18n>viewAll}" press=".onNavToEquipment" type="Transparent" />
+                            </HBox>
+                        </f:content>
+                    </f:Card>
+                    
+                    <!-- Maintenance Card -->
+                    <f:Card width="20rem" class="sapUiSmallMarginBottom sapUiSmallMarginEnd">
+                        <f:header>
+                            <card:Header
+                                title="{i18n>maintenanceOverviewTitle}"
+                                subtitle="{i18n>lastUpdated}: {maintenance>/lastUpdate}"
+                                iconSrc="sap-icon://wrench" />
+                        </f:header>
+                        <f:content>
+                            <List>
+                                <StandardListItem
+                                    title="{i18n>totalMaintenanceTasks}"
+                                    info="{maintenance>/totalCount}"
+                                    infoState="None" />
+                                <StandardListItem
+                                    title="{i18n>pendingTasks}"
+                                    info="{maintenance>/pendingCount}"
+                                    infoState="Warning" />
+                                <StandardListItem
+                                    title="{i18n>completedTasks}"
+                                    info="{maintenance>/completedCount}"
+                                    infoState="Success" />
+                            </List>
+                            <HBox justifyContent="SpaceBetween" class="sapUiSmallMarginEnd sapUiSmallMarginBottom">
+                                <Button text="{i18n>viewAll}" press=".onNavToMaintenanceLogs" type="Transparent" />
+                                <Button text="{i18n>tasks}" press=".onNavToMaintenanceTasks" type="Transparent" />
+                            </HBox>
+                        </f:content>
+                    </f:Card>
+                    
+                    <!-- Spare Parts Card -->
+                    <f:Card width="20rem" class="sapUiSmallMarginBottom sapUiSmallMarginEnd">
+                        <f:header>
+                            <card:Header
+                                title="{i18n>sparePartsOverviewTitle}"
+                                subtitle="{i18n>lastUpdated}: {spareParts>/lastUpdate}"
+                                iconSrc="sap-icon://product" />
+                        </f:header>
+                        <f:content>
+                            <List>
+                                <StandardListItem
+                                    title="{i18n>totalSpareParts}"
+                                    info="{spareParts>/totalCount}"
+                                    infoState="None" />
+                                <StandardListItem
+                                    title="{i18n>lowStockParts}"
+                                    info="{spareParts>/lowStockCount}"
+                                    infoState="Warning" />
+                                <StandardListItem
+                                    title="{i18n>outOfStockParts}"
+                                    info="{spareParts>/outOfStockCount}"
+                                    infoState="Error" />
+                            </List>
+                            <HBox justifyContent="SpaceBetween" class="sapUiSmallMarginEnd sapUiSmallMarginBottom">
+                                <Button text="{i18n>viewAll}" press=".onNavToSpareParts" type="Transparent" />
+                                <Button text="{i18n>transactions}" press=".onNavToTransactions" type="Transparent" />
+                            </HBox>
+                        </f:content>
+                    </f:Card>
+                    
+                    <!-- Recent Activities Card -->
+                    <f:Card width="auto" class="sapUiSmallMarginBottom" height="20rem">
+                        <f:header>
+                            <card:Header
+                                title="{i18n>recentActivitiesTitle}"
+                                subtitle="{i18n>last24Hours}"
+                                iconSrc="sap-icon://activity-items" />
+                        </f:header>
+                        <f:content>
+                            <List
+                                items="{auditLog>/entries}"
+                                noDataText="No recent activities"
+                                growing="true"
+                                growingThreshold="5"
+                                growingScrollToLoad="true">
+                                <CustomListItem>
+                                    <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginTopBottom">
+                                        <VBox>
+                                            <Title text="{auditLog>action}" level="H3" />
+                                            <Text text="{auditLog>description}" />
+                                        </VBox>
+                                        <VBox>
+                                            <Text text="{auditLog>user}" />
+                                            <Text text="{auditLog>timestamp}" />
+                                        </VBox>
+                                    </HBox>
+                                </CustomListItem>
+                            </List>
+                        </f:content>
+                    </f:Card>
+                </f:GridContainer>
+            </VBox>
+        </content>
+        <footer>
+            <Toolbar>
+                <ToolbarSpacer />
+                <Button icon="sap-icon://refresh" press=".onRefresh" type="Transparent" tooltip="{i18n>refresh}" />
+            </Toolbar>
+        </footer>
+    </Page>
+</mvc:View> 

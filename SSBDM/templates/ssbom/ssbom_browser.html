@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}SSBOM - Steel Bill of Materials - SSBDM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ssbom-container {
+        height: calc(100vh - 150px);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .ssbom-header {
+        margin-bottom: 1rem;
+    }
+    
+    .ssbom-content {
+        display: flex;
+        height: 100%;
+        gap: 1.5rem;
+    }
+    
+    .tree-panel {
+        flex: 0 0 350px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .tree-filters {
+        padding: 1rem;
+        background-color: var(--neutral-100);
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+        border: 1px solid var(--border-color);
+        border-bottom: none;
+    }
+    
+    .tree-container {
+        flex: 1;
+        overflow-y: auto;
+        background-color: var(--neutral-100);
+        padding: 1rem;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        border: 1px solid var(--border-color);
+    }
+    
+    .detail-panel {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .detail-header {
+        padding: 1rem;
+        background-color: var(--neutral-100);
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+        border: 1px solid var(--border-color);
+        border-bottom: none;
+    }
+    
+    .detail-content {
+        flex: 1;
+        overflow-y: auto;
+        background-color: var(--neutral-100);
+        padding: 1rem;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        border: 1px solid var(--border-color);
+    }
+    
+    .detail-image {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        background-color: var(--neutral-200);
+        padding: 1rem;
+        border-radius: var(--border-radius);
+    }
+    
+    .detail-image img {
+        max-height: 200px;
+        max-width: 100%;
+        object-fit: contain;
+    }
+    
+    .detail-placeholder {
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--neutral-500);
+        font-style: italic;
+    }
+    
+    .detail-info {
+        margin-bottom: 1.5rem;
+    }
+    
+    .detail-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .filter-toggle {
+        cursor: pointer;
+    }
+    
+    /* Media queries for responsive layout */
+    @media (max-width: 992px) {
+        .ssbom-content {
+            flex-direction: column;
+        }
+        
+        .tree-panel {
+            flex: 0 0 auto;
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-panel {
+            flex: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid ssbom-container">
+    <div class="ssbom-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div class="dashboard-section-title">Steel Bill of Materials (SSBOM)</div>
+                <div class="dashboard-section-subtitle">Explore the relationships between equipment, spare parts and documentation</div>
+            </div>
+            <div>
+                <a href="{% url 'ssbom:manage_relationships' %}" class="btn btn-primary">
+                    <i class="fas fa-edit me-1"></i> Manage Relationships
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="ssbom-content">
+        <!-- Tree View Panel -->
+        <div class="tree-panel">
+            <div class="tree-filters">
+                <div class="filter-header d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">View Filters</h5>
+                    <a href="#" class="filter-toggle" id="toggle-filters">
+                        <i class="fas fa-sliders-h"></i>
+                    </a>
+                </div>
+                
+                <div id="filter-options">
+                    <div class="mb-3">
+                        <label class="form-label">Hierarchy Type</label>
+                        <select class="form-select" id="hierarchy-type">
+                            <option value="full">Full Hierarchy</option>
+                            <option value="equipment">Equipment Only</option>
+                            <option value="spare-parts">Spare Parts by Category</option>
+                            <option value="documents">Documents by Type</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Search Tree</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="ssbom-search" placeholder="Search...">
+                            <button class="btn btn-outline-secondary" type="button" id="clear-search">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="show-equipment" checked>
+                            <label class="form-check-label" for="show-equipment">
+                                <i class="fas fa-tools me-2"></i> Show Equipment
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="show-spare-parts" checked>
+                            <label class="form-check-label" for="show-spare-parts">
+                                <i class="fas fa-cogs me-2"></i> Show Spare Parts
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="show-documents" checked>
+                            <label class="form-check-label" for="show-documents">
+                                <i class="fas fa-file-alt me-2"></i> Show Documents
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary w-100" id="apply-filters">
+                        <i class="fas fa-filter me-2"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+            
+            <div class="tree-container">
+                <div id="ssbom-tree">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detail Panel -->
+        <div class="detail-panel">
+            <div class="detail-header">
+                <h5 class="mb-0" id="detail-title">Item Details</h5>
+            </div>
+            
+            <div class="detail-content" id="detail-content">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <p>Select an item from the tree to view its details</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Toggle filter options
+        $('#toggle-filters').on('click', function(e) {
+            e.preventDefault();
+            $('#filter-options').slideToggle(200);
+        });
+        
+        // Load the SSBOM tree with the initial filters
+        loadSSBOMTree();
+        
+        // Apply filters button click
+        $('#apply-filters').on('click', function() {
+            loadSSBOMTree();
+        });
+        
+        // Function to load the SSBOM tree based on filters
+        function loadSSBOMTree() {
+            const hierarchyType = $('#hierarchy-type').val();
+            const showEquipment = $('#show-equipment').is(':checked');
+            const showSpareParts = $('#show-spare-parts').is(':checked');
+            const showDocuments = $('#show-documents').is(':checked');
+            
+            // Show loading spinner
+            $('#ssbom-tree').html('<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+            
+            // Make the AJAX request to get tree data
+            $.ajax({
+                url: '{% url "ssbom:tree_data" %}',
+                data: {
+                    hierarchy_type: hierarchyType,
+                    show_equipment: showEquipment,
+                    show_spare_parts: showSpareParts,
+                    show_documents: showDocuments
+                },
+                dataType: 'json',
+                success: function(data) {
+                    // Initialize or refresh the jsTree
+                    if ($('#ssbom-tree').hasClass('jstree')) {
+                        $('#ssbom-tree').jstree(true).settings.core.data = data;
+                        $('#ssbom-tree').jstree(true).refresh();
+                    } else {
+                        initializeTree(data);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#ssbom-tree').html('<div class="alert alert-danger">Error loading tree data. Please try again later.</div>');
+                    console.error("Error loading tree data:", error);
+                }
+            });
+        }
+        
+        // Initialize the jsTree with data
+        function initializeTree(data) {
+            $('#ssbom-tree').jstree({
+                'core': {
+                    'data': data,
+                    'themes': {
+                        'name': 'default',
+                        'responsive': true
+                    }
+                },
+                'plugins': ['types', 'wholerow', 'search'],
+                'search': {
+                    'case_sensitive': false,
+                    'show_only_matches': true,
+                    'show_only_matches_children': true
+                },
+                'types': {
+                    'area': {
+                        'icon': 'fas fa-map-marker-alt'
+                    },
+                    'equipment': {
+                        'icon': 'fas fa-tools'
+                    },
+                    'spare-part': {
+                        'icon': 'fas fa-cogs'
+                    },
+                    'document': {
+                        'icon': 'fas fa-file-alt'
+                    },
+                    'category': {
+                        'icon': 'fas fa-folder'
+                    }
+                }
+            }).on('select_node.jstree', function(e, data) {
+                // When a node is selected, load its details
+                const node = data.node;
+                const nodeType = node.original.type;
+                const nodeId = node.original.id.split('-')[1];
+                
+                // Update the detail panel title
+                $('#detail-title').text(node.text);
+                
+                // Load the appropriate details based on node type
+                switch(nodeType) {
+                    case 'area':
+                        loadAreaDetails(nodeId);
+                        break;
+                    case 'equipment':
+                        loadEquipmentDetails(nodeId);
+                        break;
+                    case 'spare-part':
+                        loadSparePartDetails(nodeId);
+                        break;
+                    case 'document':
+                        loadDocumentDetails(nodeId);
+                        break;
+                    case 'category':
+                        loadCategoryDetails(nodeId);
+                        break;
+                    default:
+                        $('#detail-content').html('<div class="alert alert-warning">Unknown item type.</div>');
+                }
+            });
+            
+            // Add search box functionality
+            let searchTimeout = false;
+            
+            $('#ssbom-search').keyup(function() {
+                if(searchTimeout) { clearTimeout(searchTimeout); }
+                searchTimeout = setTimeout(function() {
+                    const searchString = $('#ssbom-search').val();
+                    $('#ssbom-tree').jstree('search', searchString);
+                }, 250);
+            });
+            
+            // Clear search button
+            $('#clear-search').click(function() {
+                $('#ssbom-search').val('');
+                $('#ssbom-tree').jstree('search', '');
+            });
+        }
+        
+        // Functions to load details for different item types
+        function loadAreaDetails(areaId) {
+            $.ajax({
+                url: '{% url "ssbom:area_detail_ajax" 0 %}'.replace('0', areaId),
+                dataType: 'html',
+                success: function(data) {
+                    $('#detail-content').html(data);
+                },
+                error: function(xhr, status, error) {
+                    $('#detail-content').html('<div class="alert alert-danger">Error loading area details. Please try again later.</div>');
+                    console.error("Error loading area details:", error);
+                }
+            });
+        }
+        
+        function loadEquipmentDetails(equipmentId) {
+            $.ajax({
+                url: '{% url "ssbom:equipment_detail_ajax" 0 %}'.replace('0', equipmentId),
+                dataType: 'html',
+                success: function(data) {
+                    $('#detail-content').html(data);
+                },
+                error: function(xhr, status, error) {
+                    $('#detail-content').html('<div class="alert alert-danger">Error loading equipment details. Please try again later.</div>');
+                    console.error("Error loading equipment details:", error);
+                }
+            });
+        }
+        
+        function loadSparePartDetails(sparePartId) {
+            $.ajax({
+                url: '{% url "ssbom:spare_part_detail_ajax" 0 %}'.replace('0', sparePartId),
+                dataType: 'html',
+                success: function(data) {
+                    $('#detail-content').html(data);
+                },
+                error: function(xhr, status, error) {
+                    $('#detail-content').html('<div class="alert alert-danger">Error loading spare part details. Please try again later.</div>');
+                    console.error("Error loading spare part details:", error);
+                }
+            });
+        }
+        
+        function loadDocumentDetails(documentId) {
+            $.ajax({
+                url: '{% url "ssbom:document_detail_ajax" 0 %}'.replace('0', documentId),
+                dataType: 'html',
+                success: function(data) {
+                    $('#detail-content').html(data);
+                },
+                error: function(xhr, status, error) {
+                    $('#detail-content').html('<div class="alert alert-danger">Error loading document details. Please try again later.</div>');
+                    console.error("Error loading document details:", error);
+                }
+            });
+        }
+        
+        function loadCategoryDetails(categoryId) {
+            $.ajax({
+                url: '{% url "ssbom:category_detail_ajax" 0 %}'.replace('0', categoryId),
+                dataType: 'html',
+                success: function(data) {
+                    $('#detail-content').html(data);
+                },
+                error: function(xhr, status, error) {
+                    $('#detail-content').html('<div class="alert alert-danger">Error loading category details. Please try again later.</div>');
+                    console.error("Error loading category details:", error);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

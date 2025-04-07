@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}{{ area.name }} - SSBDM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-map-marker-alt"></i> {{ area.name }}</h1>
+        <p class="text-muted">
+            <span class="badge bg-secondary">{{ area.code }}</span>
+            {% if area.parent %}
+            <span class="text-muted">
+                <i class="fas fa-level-up-alt me-1"></i> Part of 
+                <a href="{% url 'equipment:area_detail' area.parent.pk %}">{{ area.parent.name }}</a>
+            </span>
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <div class="btn-group">
+            <a href="{% url 'equipment:area_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Areas
+            </a>
+            <a href="{% url 'equipment:area_edit' area.pk %}" class="btn btn-outline-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'equipment:area_delete' area.pk %}" class="btn btn-outline-danger">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <!-- Area Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Area Information</h5>
+            </div>
+            <div class="card-body">
+                {% if area.description %}
+                <div class="mb-4">
+                    <h6>Description</h6>
+                    <p>{{ area.description|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <h6>Equipment Count</h6>
+                    <p>{{ area.equipment.count }} equipment item(s)</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Code</h6>
+                    <p><span class="badge bg-secondary">{{ area.code }}</span></p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Created</h6>
+                    <p>{{ area.created_at|date:"F j, Y" }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Last Updated</h6>
+                    <p>{{ area.updated_at|date:"F j, Y" }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sub Areas -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Sub Areas</h5>
+                <a href="{% url 'equipment:area_add' %}?parent={{ area.id }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Add Sub Area
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for child in area.get_children %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="{% url 'equipment:area_detail' child.pk %}">
+                                    <i class="fas fa-map-marker-alt me-2"></i> {{ child.name }}
+                                </a>
+                                <span class="badge bg-secondary ms-2">{{ child.code }}</span>
+                            </div>
+                            <span class="badge bg-info">{{ child.equipment.count }} equipment</span>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center py-4">
+                        <span class="text-muted">No sub areas found</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <!-- Equipment in this area -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Equipment in this Area</h5>
+                <a href="{% url 'equipment:equipment_add' %}?area={{ area.id }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Add Equipment
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Last Maintenance</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for equipment in equipment_list %}
+                            <tr>
+                                <td>{{ equipment.code }}</td>
+                                <td>
+                                    <a href="{% url 'equipment:equipment_detail' equipment.pk %}">
+                                        {{ equipment.name }}
+                                    </a>
+                                </td>
+                                <td>{{ equipment.get_equipment_type_display }}</td>
+                                <td>
+                                    <span class="status-indicator status-{{ equipment.status }}"></span>
+                                    {{ equipment.get_status_display }}
+                                </td>
+                                <td>
+                                    {% if equipment.last_maintenance_date %}
+                                        {{ equipment.last_maintenance_date }}
+                                    {% else %}
+                                        <span class="text-muted">Not available</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'equipment:equipment_detail' equipment.pk %}" class="btn btn-info" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'equipment:equipment_edit' equipment.pk %}" class="btn btn-primary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'maintenance:log_add' %}?equipment={{ equipment.id }}" class="btn btn-success" title="Add Maintenance">
+                                            <i class="fas fa-wrench"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center p-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-cogs fa-2x mb-3"></i>
+                                        <p>No equipment found in this area</p>
+                                        <a href="{% url 'equipment:equipment_add' %}?area={{ area.id }}" class="btn btn-primary">
+                                            <i class="fas fa-plus"></i> Add Equipment
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                {% include 'includes/pagination.html' with page_obj=page_obj %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

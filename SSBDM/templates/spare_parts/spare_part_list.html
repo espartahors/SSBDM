@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Spare Parts - SSBDM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h2 class="mb-3">Spare Parts</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'spare_parts:spare_part_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Part
+            </a>
+            <a href="{% url 'spare_parts:transaction_add' %}" class="btn btn-success">
+                <i class="fas fa-exchange-alt"></i> New Transaction
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <div class="row">
+                <div class="col-md-8">
+                    <form method="get" class="row g-3">
+                        <div class="col-auto">
+                            <input type="text" name="search" class="form-control" placeholder="Search..." value="{{ request.GET.search|default:'' }}">
+                        </div>
+                        <div class="col-auto">
+                            <select name="category" class="form-select">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"i" %}selected{% endif %}>{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-secondary">Filter</button>
+                            {% if request.GET.search or request.GET.category %}
+                            <a href="{% url 'spare_parts:spare_part_list' %}" class="btn btn-outline-secondary">Clear</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="btn-group">
+                        <a href="{% url 'spare_parts:low_stock_list' %}" class="btn btn-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Low Stock Items
+                        </a>
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">CSV</a></li>
+                            <li><a class="dropdown-item" href="#">Excel</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Part Number</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Stock</th>
+                            <th>Min. Stock</th>
+                            <th>Location</th>
+                            <th>Last Updated</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for part in spare_part_list %}
+                        <tr class="{% if part.quantity_in_stock < part.minimum_stock %}{% if part.quantity_in_stock == 0 %}table-danger{% else %}table-warning{% endif %}{% endif %}">
+                            <td>{{ part.part_number }}</td>
+                            <td>{{ part.description|truncatechars:50 }}</td>
+                            <td>{% if part.category %}{{ part.category.name }}{% else %}-{% endif %}</td>
+                            <td>
+                                <span class="fw-bold">{{ part.quantity_in_stock }}</span>
+                            </td>
+                            <td>{{ part.minimum_stock }}</td>
+                            <td>{{ part.location }}</td>
+                            <td>{{ part.last_updated|date:"d M Y" }}</td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'spare_parts:spare_part_detail' part.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'spare_parts:spare_part_update' part.id %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'spare_parts:transaction_add' %}?part={{ part.id }}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </a>
+                                    <a href="{% url 'spare_parts:spare_part_delete' part.id %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center p-3">
+                                <div class="alert alert-info mb-0">
+                                    No spare parts found. {% if request.GET.search or request.GET.category %}Try changing your filter criteria.{% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer d-flex justify-content-between align-items-center">
+            <span>Showing {{ spare_part_list.count }} of {{ paginator.count }} spare parts</span>
+            
+            {% if is_paginated %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in paginator.page_range %}
+                        {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -2,7 +2,7 @@ from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
 from .models import (
     Area, Equipment, TechnicalSpecification, 
-    MaintenanceLog, SparePart, EquipmentDocument
+    MaintenanceLog, SparePart, EquipmentDocument, MaintenanceTask
 )
 
 @admin.register(Area)
@@ -26,13 +26,57 @@ class EquipmentAdmin(admin.ModelAdmin):
     search_fields = ('code', 'name', 'serial_number')
     inlines = [TechnicalSpecificationInline, EquipmentDocumentInline]
 
-@admin.register(MaintenanceLog)
+class MaintenanceTaskInline(admin.TabularInline):
+    model = MaintenanceTask
+    extra = 0
+    fields = ('description', 'status', 'assigned_to', 'due_date')
+    readonly_fields = ('completed_date',)
+
 class MaintenanceLogAdmin(admin.ModelAdmin):
-    list_display = ('title', 'equipment', 'maintenance_type', 'date', 'duration')
-    list_filter = ('maintenance_type', 'date', 'equipment')
-    search_fields = ('title', 'description', 'equipment__code', 'equipment__name')
-    filter_horizontal = ('technicians',)
-    date_hierarchy = 'date'
+    list_display = ('equipment', 'maintenance_type', 'date', 'duration', 'created_by')
+    list_filter = ('maintenance_type', 'date', 'created_by')
+    search_fields = ('equipment__code', 'equipment__name', 'title')
+    ordering = ('-date',)
+    inlines = [MaintenanceTaskInline]
+    readonly_fields = ('created_at', 'created_by')
+    
+    fieldsets = (
+        ('Maintenance Details', {
+            'fields': ('equipment', 'title', 'maintenance_type', 'description')
+        }),
+        ('Execution', {
+            'fields': ('date', 'duration', 'technicians', 'observations')
+        }),
+        ('Audit', {
+            'fields': ('created_at', 'created_by'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
+
+class MaintenanceTaskAdmin(admin.ModelAdmin):
+    list_display = ('maintenance_log', 'status', 'assigned_to', 'due_date', 'completed_date')
+    list_filter = ('status', 'assigned_to', 'due_date')
+    search_fields = ('maintenance_log__equipment__code', 'description')
+    ordering = ('status', 'due_date')
+    readonly_fields = ('completed_date',)
+    
+    fieldsets = (
+        ('Task Details', {
+            'fields': ('maintenance_log', 'description', 'status')
+        }),
+        ('Assignment', {
+            'fields': ('assigned_to', 'due_date', 'completed_date')
+        }),
+        ('Notes', {
+            'fields': ('notes',),
+            'classes': ('collapse',)
+        })
+    )
 
 @admin.register(SparePart)
 class SparePartAdmin(admin.ModelAdmin):
@@ -46,3 +90,6 @@ class EquipmentDocumentAdmin(admin.ModelAdmin):
     list_display = ('title', 'equipment', 'document_type', 'upload_date')
     list_filter = ('document_type', 'upload_date')
     search_fields = ('title', 'equipment__code', 'equipment__name')
+
+admin.site.register(MaintenanceLog, MaintenanceLogAdmin)
+admin.site.register(MaintenanceTask, MaintenanceTaskAdmin)

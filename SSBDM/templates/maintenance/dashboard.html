@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - SSBDM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-stat-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .chart-container {
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="content-header">
+        <h1 class="content-title">Dashboard</h1>
+        <div class="content-subtitle">Welcome back, {{ user.get_full_name|default:user.username }}!</div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="dashboard-stat-container mb-4">
+        <div class="stat-card primary">
+            <div class="stat-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ equipment_count }}</div>
+                <div class="stat-label">Total Equipment</div>
+                <div class="stat-link">
+                    <a href="{% url 'equipment:equipment_list' %}">View all <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ operational_count }}</div>
+                <div class="stat-label">Operational Equipment</div>
+                <div class="stat-footer">{{ operational_percentage }}% of total</div>
+            </div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-icon">
+                <i class="fas fa-wrench"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ maintenance_count }}</div>
+                <div class="stat-label">Under Maintenance</div>
+                <div class="stat-footer">{{ maintenance_percentage }}% of total</div>
+            </div>
+        </div>
+        
+        <div class="stat-card danger">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ out_of_service_count }}</div>
+                <div class="stat-label">Out of Service</div>
+                <div class="stat-footer">{{ out_of_service_percentage }}% of total</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Maintenance Activities by Month</h5>
+                    <div class="card-tools">
+                        <i class="fas fa-chevron-up toggle-icon"></i>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="maintenanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Equipment by Type</h5>
+                    <div class="card-tools">
+                        <i class="fas fa-chevron-up toggle-icon"></i>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="equipmentTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Maintenance & Tasks -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Recent Maintenance</h5>
+                    <div class="card-tools">
+                        <a href="{% url 'maintenance:log_list' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-list"></i> View All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Equipment</th>
+                                    <th>Type</th>
+                                    <th>Result</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logs %}
+                                <tr>
+                                    <td>{{ log.date }}</td>
+                                    <td>{{ log.equipment.name }}</td>
+                                    <td>{{ log.get_maintenance_type_display }}</td>
+                                    <td>
+                                        {% if log.maintenance_result == "Successful" %}
+                                        <span class="status-badge status-success">
+                                            <i class="fas fa-check-circle"></i> Successful
+                                        </span>
+                                        {% elif log.maintenance_result == "Partial" %}
+                                        <span class="status-badge status-warning">
+                                            <i class="fas fa-exclamation-circle"></i> Partial
+                                        </span>
+                                        {% elif log.maintenance_result == "Failed" %}
+                                        <span class="status-badge status-danger">
+                                            <i class="fas fa-times-circle"></i> Failed
+                                        </span>
+                                        {% else %}
+                                        <span class="status-badge">
+                                            <i class="fas fa-info-circle"></i> {{ log.maintenance_result }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center p-3">
+                                        <div class="empty-state">
+                                            <i class="fas fa-clipboard-list empty-state-icon"></i>
+                                            <p>No maintenance logs found</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Upcoming Tasks</h5>
+                    <div class="card-tools">
+                        <a href="{% url 'maintenance:task_list' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-list"></i> View All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Due Date</th>
+                                    <th>Equipment</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in upcoming_tasks %}
+                                <tr>
+                                    <td>{{ task.due_date }}</td>
+                                    <td>{{ task.maintenance_log.equipment.name }}</td>
+                                    <td>{{ task.description|truncatechars:30 }}</td>
+                                    <td>
+                                        {% if task.status == "Pending" %}
+                                        <span class="status-badge status-warning">
+                                            <i class="fas fa-clock"></i> Pending
+                                        </span>
+                                        {% elif task.status == "In_Progress" %}
+                                        <span class="status-badge status-info">
+                                            <i class="fas fa-spinner"></i> In Progress
+                                        </span>
+                                        {% elif task.status == "Completed" %}
+                                        <span class="status-badge status-success">
+                                            <i class="fas fa-check"></i> Completed
+                                        </span>
+                                        {% else %}
+                                        <span class="status-badge">
+                                            <i class="fas fa-info-circle"></i> {{ task.status }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center p-3">
+                                        <div class="empty-state">
+                                            <i class="fas fa-tasks empty-state-icon"></i>
+                                            <p>No upcoming tasks found</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="section-header mb-3">
+        <h4>Quick Links</h4>
+    </div>
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="quick-link-card">
+                <div class="quick-link-icon primary">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <h5 class="quick-link-title">Add Equipment</h5>
+                <p class="quick-link-text">Register new equipment in the system</p>
+                <a href="{% url 'equipment:equipment_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Equipment
+                </a>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="quick-link-card">
+                <div class="quick-link-icon success">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h5 class="quick-link-title">Log Maintenance</h5>
+                <p class="quick-link-text">Record a new maintenance activity</p>
+                <a href="{% url 'maintenance:log_add' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Log Maintenance
+                </a>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="quick-link-card">
+                <div class="quick-link-icon info">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h5 class="quick-link-title">Add Document</h5>
+                <p class="quick-link-text">Upload new equipment documentation</p>
+                <a href="{% url 'documents:document_add' %}" class="btn btn-info">
+                    <i class="fas fa-upload"></i> Add Document
+                </a>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="quick-link-card">
+                <div class="quick-link-icon warning">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h5 class="quick-link-title">Spare Parts</h5>
+                <p class="quick-link-text">Manage spare parts inventory</p>
+                <a href="{% url 'spare_parts:spare_part_list' %}" class="btn btn-warning">
+                    <i class="fas fa-search"></i> View Spare Parts
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Maintenance Chart
+    const maintenanceCtx = document.getElementById('maintenanceChart').getContext('2d');
+    const maintenanceChart = new Chart(maintenanceCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ months|safe }},
+            datasets: [{
+                label: 'Maintenance Activities',
+                data: {{ monthly_activities|safe }},
+                backgroundColor: 'rgba(var(--primary-rgb), 0.7)',
+                borderColor: 'rgb(var(--primary-rgb))',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Maintenance Activities'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Month'
+                    }
+                }
+            }
+        }
+    });
+
+    // Equipment Type Chart
+    const equipmentTypeCtx = document.getElementById('equipmentTypeChart').getContext('2d');
+    const equipmentTypeChart = new Chart(equipmentTypeCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ equipment_types|safe }},
+            datasets: [{
+                data: {{ equipment_type_counts|safe }},
+                backgroundColor: [
+                    'rgba(var(--primary-rgb), 0.7)',
+                    'rgba(var(--success-rgb), 0.7)',
+                    'rgba(var(--warning-rgb), 0.7)',
+                    'rgba(var(--danger-rgb), 0.7)',
+                    'rgba(var(--info-rgb), 0.7)',
+                    'rgba(255, 159, 64, 0.7)'
+                ],
+                borderColor: [
+                    'rgb(var(--primary-rgb))',
+                    'rgb(var(--success-rgb))',
+                    'rgb(var(--warning-rgb))',
+                    'rgb(var(--danger-rgb))',
+                    'rgb(var(--info-rgb))',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %} 

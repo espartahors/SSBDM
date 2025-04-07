@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Maintenance Summary Report - SSBDM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-file-alt"></i> Maintenance Summary Report</h1>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <div class="btn-group">
+            <a href="{% url 'maintenance:reports' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Reports
+            </a>
+            <button class="btn btn-outline-primary" onclick="window.print()">
+                <i class="fas fa-print"></i> Print
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="card-title mb-0">Filters</h5>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <span class="text-muted">Report generated: {% now "F j, Y H:i" %}</span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="date_from" class="form-label">From Date</label>
+                <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request.GET.date_from }}">
+            </div>
+            <div class="col-md-3">
+                <label for="date_to" class="form-label">To Date</label>
+                <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request.GET.date_to }}">
+            </div>
+            <div class="col-md-3">
+                <label for="maintenance_type" class="form-label">Maintenance Type</label>
+                <select class="form-select" id="maintenance_type" name="maintenance_type">
+                    <option value="">All Types</option>
+                    <option value="preventive" {% if request.GET.maintenance_type == 'preventive' %}selected{% endif %}>Preventive</option>
+                    <option value="corrective" {% if request.GET.maintenance_type == 'corrective' %}selected{% endif %}>Corrective</option>
+                    <option value="predictive" {% if request.GET.maintenance_type == 'predictive' %}selected{% endif %}>Predictive</option>
+                    <option value="inspection" {% if request.GET.maintenance_type == 'inspection' %}selected{% endif %}>Inspection</option>
+                    <option value="calibration" {% if request.GET.maintenance_type == 'calibration' %}selected{% endif %}>Calibration</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="equipment" class="form-label">Equipment</label>
+                <select class="form-select" id="equipment" name="equipment">
+                    <option value="">All Equipment</option>
+                    {% for eq in equipment_list %}
+                    <option value="{{ eq.id }}" {% if request.GET.equipment == eq.id|stringformat:"i" %}selected{% endif %}>{{ eq.code }} - {{ eq.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+                <a href="{% url 'maintenance:maintenance_summary' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-undo"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Maintenance</h5>
+                <div class="display-4">{{ maintenance_logs|length }}</div>
+                <p class="card-text">Total maintenance activities</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Preventive</h5>
+                <div class="display-4">{{ preventive_count }}</div>
+                <p class="card-text">Preventive maintenance activities</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">Corrective</h5>
+                <div class="display-4">{{ corrective_count }}</div>
+                <p class="card-text">Corrective maintenance activities</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Average Duration</h5>
+                <div class="display-4">{{ avg_duration|floatformat:1 }}</div>
+                <p class="card-text">Average hours per maintenance</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Maintenance Logs Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Maintenance Logs</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Equipment</th>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Duration (hrs)</th>
+                        <th>Technicians</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in maintenance_logs %}
+                    <tr>
+                        <td>{{ log.date }}</td>
+                        <td>
+                            <a href="{% url 'equipment:equipment_detail' log.equipment.pk %}">
+                                {{ log.equipment.code }} - {{ log.equipment.name }}
+                            </a>
+                        </td>
+                        <td>{{ log.title }}</td>
+                        <td>
+                            <span class="badge {% if log.maintenance_type == 'preventive' %}bg-success{% elif log.maintenance_type == 'corrective' %}bg-warning{% elif log.maintenance_type == 'inspection' %}bg-info{% elif log.maintenance_type == 'calibration' %}bg-secondary{% else %}bg-primary{% endif %}">
+                                {{ log.get_maintenance_type_display }}
+                            </span>
+                        </td>
+                        <td>{{ log.duration }}</td>
+                        <td>{{ log.technicians.count }}</td>
+                        <td>
+                            <a href="{% url 'maintenance:log_detail' log.pk %}" class="btn btn-sm btn-info" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center p-4">
+                            <div class="text-muted">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <p>No maintenance logs found matching the selected filters.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

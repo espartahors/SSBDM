@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mvc:View
+    controllerName="ssbdm.controller.equipment.Equipment"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.f"
+    xmlns:layout="sap.ui.layout"
+    displayBlock="true">
+    
+    <Page id="equipmentPage" 
+          title="{i18n>equipmentTitle}"
+          showNavButton="true"
+          navButtonPress=".onNavBack">
+        <headerContent>
+            <Button
+                icon="sap-icon://add"
+                text="{i18n>create}"
+                press=".onAddEquipment"
+                visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} }" />
+        </headerContent>
+        <content>
+            <f:DynamicPage id="dynamicPageId">
+                <f:title>
+                    <f:DynamicPageTitle>
+                        <f:heading>
+                            <Title text="{i18n>equipment}" />
+                        </f:heading>
+                        <f:actions>
+                            <OverflowToolbar>
+                                <Button
+                                    icon="sap-icon://action-settings"
+                                    press=".onToggleFilterBar" />
+                                <Button
+                                    icon="sap-icon://sort"
+                                    press=".onOpenSortDialog" />
+                                <Button
+                                    icon="sap-icon://refresh"
+                                    press=".onRefresh" />
+                            </OverflowToolbar>
+                        </f:actions>
+                    </f:DynamicPageTitle>
+                </f:title>
+                <f:header>
+                    <f:DynamicPageHeader>
+                        <HBox alignItems="Center" wrap="Wrap">
+                            <VBox class="sapUiSmallMarginEnd">
+                                <Label text="{i18n>searchEquipment}" />
+                                <SearchField
+                                    id="searchField"
+                                    liveChange=".onSearchLiveChange"
+                                    search=".onSearch"
+                                    width="300px" />
+                            </VBox>
+                            <VBox class="sapUiSmallMarginEnd">
+                                <Label text="{i18n>status}" />
+                                <ComboBox
+                                    id="statusFilter"
+                                    items="{/statusOptions}"
+                                    selectionChange=".onFilterChange">
+                                    <core:Item key="{key}" text="{text}" />
+                                </ComboBox>
+                            </VBox>
+                            <VBox>
+                                <Label text="{i18n>area}" />
+                                <ComboBox
+                                    id="areaFilter"
+                                    items="{/areaOptions}"
+                                    selectionChange=".onFilterChange">
+                                    <core:Item key="{key}" text="{text}" />
+                                </ComboBox>
+                            </VBox>
+                        </HBox>
+                    </f:DynamicPageHeader>
+                </f:header>
+                <f:content>
+                    <Table
+                        id="equipmentTable"
+                        items="{/equipment}"
+                        noDataText="{i18n>noEquipment}"
+                        growing="true"
+                        growingScrollToLoad="true"
+                        updateFinished=".onUpdateFinished"
+                        mode="None"
+                        class="sapUiResponsiveMargin">
+                        <headerToolbar>
+                            <OverflowToolbar>
+                                <content>
+                                    <Title text="{i18n>equipmentCount}: {/equipmentCount}" level="H2" />
+                                    <ToolbarSpacer />
+                                </content>
+                            </OverflowToolbar>
+                        </headerToolbar>
+                        <columns>
+                            <Column>
+                                <Text text="{i18n>code}" />
+                            </Column>
+                            <Column>
+                                <Text text="{i18n>name}" />
+                            </Column>
+                            <Column>
+                                <Text text="{i18n>model}" />
+                            </Column>
+                            <Column>
+                                <Text text="{i18n>manufacturer}" />
+                            </Column>
+                            <Column>
+                                <Text text="{i18n>area}" />
+                            </Column>
+                            <Column>
+                                <Text text="{i18n>status}" />
+                            </Column>
+                            <Column>
+                                <Text text="{i18n>installationDate}" />
+                            </Column>
+                            <Column>
+                                <Text text="{i18n>actions}" />
+                            </Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem type="Navigation" press=".onEquipmentItemPress">
+                                <cells>
+                                    <Text text="{code}" />
+                                    <Text text="{name}" />
+                                    <Text text="{model}" />
+                                    <Text text="{manufacturer}" />
+                                    <Text text="{area_name}" />
+                                    <ObjectStatus
+                                        text="{status}"
+                                        state="{= ${status} === 'active' ? 'Success' : 
+                                                ${status} === 'maintenance' ? 'Warning' : 
+                                                ${status} === 'inactive' ? 'Error' : 'None' }" />
+                                    <Text text="{installation_date}" />
+                                    <HBox justifyContent="End">
+                                        <Button
+                                            icon="sap-icon://edit"
+                                            press=".onEditEquipment"
+                                            visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} }" />
+                                        <Button
+                                            icon="sap-icon://delete"
+                                            press=".onDeleteEquipment"
+                                            visible="{= ${userInfo>/isAdmin} }" />
+                                    </HBox>
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </f:content>
+            </f:DynamicPage>
+        </content>
+    </Page>
+</mvc:View> 

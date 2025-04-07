@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }} - Category Details - SSBDM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>
+                <i class="fas fa-folder me-2"></i> {{ category.name }}
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'spare_parts:category_list' %}">Categories</a></li>
+                    {% if category.parent %}
+                    <li class="breadcrumb-item"><a href="{% url 'spare_parts:category_detail' category.parent.pk %}">{{ category.parent.name }}</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'spare_parts:category_edit' category.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit Category
+            </a>
+            <a href="{% url 'spare_parts:category_add' %}?parent={{ category.pk }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Add Subcategory
+            </a>
+            <a href="{% url 'spare_parts:category_delete' category.pk %}" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Category Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Description</h6>
+                        <p>{{ category.description|linebreaks|default:"No description provided." }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Parent Category</h6>
+                        {% if category.parent %}
+                        <p><a href="{% url 'spare_parts:category_detail' category.parent.pk %}">{{ category.parent.name }}</a></p>
+                        {% else %}
+                        <p class="text-muted">Root category</p>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <h6>Subcategories</h6>
+                        <p>{{ category.get_children.count }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Spare Parts</h6>
+                        <p>{{ category.spare_parts.count }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Created</h6>
+                        <p>{{ category.created_at|date:"F j, Y" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Last Updated</h6>
+                        <p>{{ category.updated_at|date:"F j, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <!-- Subcategories -->
+            {% if category.get_children.exists %}
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Subcategories</h5>
+                    <a href="{% url 'spare_parts:category_add' %}?parent={{ category.pk }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Add Subcategory
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Subcategories</th>
+                                    <th>Spare Parts</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subcategory in category.get_children %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'spare_parts:category_detail' subcategory.pk %}">
+                                            <i class="fas fa-folder me-2"></i> {{ subcategory.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ subcategory.description|truncatechars:50 }}</td>
+                                    <td>{{ subcategory.get_children.count }}</td>
+                                    <td>{{ subcategory.spare_parts.count }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'spare_parts:category_edit' subcategory.pk %}" class="btn btn-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'spare_parts:category_delete' subcategory.pk %}" class="btn btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Spare Parts in this Category -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Spare Parts in this Category</h5>
+                    <a href="{% url 'spare_parts:spare_part_add' %}?category={{ category.pk }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Add Spare Part
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if spare_parts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Part Number</th>
+                                    <th>Description</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for part in spare_parts %}
+                                <tr>
+                                    <td>{{ part.part_number }}</td>
+                                    <td>
+                                        <a href="{% url 'spare_parts:spare_part_detail' part.pk %}">
+                                            {{ part.description|truncatechars:50 }}
+                                        </a>
+                                    </td>
+                                    <td>{{ part.quantity_in_stock }} / {{ part.minimum_stock }}</td>
+                                    <td>
+                                        <span class="badge {% if part.stock_status == 'in_stock' %}bg-success{% elif part.stock_status == 'low_stock' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ part.get_stock_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'spare_parts:spare_part_detail' part.pk %}" class="btn btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'spare_parts:spare_part_edit' part.pk %}" class="btn btn-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'spare_parts:transaction_add' %}?spare_part={{ part.pk }}" class="btn btn-success">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-tools fa-3x mb-3 text-muted"></i>
+                        <h4>No Spare Parts</h4>
+                        <p class="text-muted">There are no spare parts in this category yet.</p>
+                        <a href="{% url 'spare_parts:spare_part_add' %}?category={{ category.pk }}" class="btn btn-primary mt-2">
+                            <i class="fas fa-plus"></i> Add Spare Part
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

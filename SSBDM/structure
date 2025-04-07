@@ -1,11 +1,27 @@
-steel_factory_maintenance/
+SSBDM/
 ├── manage.py
-├── steel_factory_maintenance/
+├── SSBDM/
 │   ├── __init__.py
 │   ├── settings.py
 │   ├── urls.py
 │   ├── asgi.py
 │   └── wsgi.py
+├── equipment/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── urls.py
+│   └── views.py
+├── spare_parts/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── urls.py
+│   └── views.py
 ├── maintenance/
 │   ├── __init__.py
 │   ├── admin.py
@@ -13,17 +29,87 @@ steel_factory_maintenance/
 │   ├── forms.py
 │   ├── models.py
 │   ├── urls.py
-│   ├── views.py
-│   ├── templates/
-│   │   └── maintenance/
-│   │       ├── base.html
-│   │       ├── dashboard.html
-│   │       ├── equipment_detail.html
-│   │       ├── component_detail.html
-│   │       └── ...
-│   └── static/
-│       ├── css/
-│       ├── js/
-│       └── ...
+│   └── views.py
+├── security/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── urls.py
+│   └── views.py
+├── documents/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── urls.py
+│   └── views.py
+├── templates/
+│   ├── base.html
+│   ├── dashboard.html
+│   ├── registration/
+│   │   ├── login.html
+│   │   └── password_change_form.html
+│   ├── equipment/
+│   │   ├── area_detail.html
+│   │   ├── area_form.html
+│   │   ├── area_list.html
+│   │   ├── area_confirm_delete.html
+│   │   ├── equipment_detail.html
+│   │   ├── equipment_form.html
+│   │   ├── equipment_list.html
+│   │   ├── equipment_confirm_delete.html
+│   │   ├── tree_browser.html
+│   │   └── partials/
+│   │       ├── area_detail_fragment.html
+│   │       └── equipment_detail_fragment.html
+│   ├── spare_parts/
+│   │   ├── spare_part_list.html
+│   │   ├── spare_part_detail.html
+│   │   ├── spare_part_form.html
+│   │   ├── spare_part_confirm_delete.html
+│   │   ├── category_list.html
+│   │   ├── category_detail.html
+│   │   ├── category_form.html
+│   │   ├── category_confirm_delete.html
+│   │   ├── transaction_list.html
+│   │   ├── transaction_detail.html
+│   │   ├── transaction_form.html
+│   │   ├── transaction_confirm_delete.html
+│   │   ├── stock_list.html
+│   │   ├── stock_dashboard.html
+│   │   ├── spare_part_tree_browser.html
+│   │   └── partials/
+│   │       ├── category_detail_fragment.html
+│   │       └── spare_part_detail_fragment.html
+│   ├── maintenance/
+│   │   ├── maintenance_list.html
+│   │   ├── task_form.html
+│   │   └── maintenance_detail.html
+│   ├── security/
+│   │   ├── incident_list.html
+│   │   └── incident_form.html
+│   └── documents/
+│       ├── document_list.html
+│       └── document_form.html
+├── static/
+│   ├── css/
+│   │   ├── bootstrap.min.css
+│   │   └── custom.css
+│   ├── js/
+│   │   ├── bootstrap.bundle.min.js
+│   │   └── jquery.min.js
+│   └── img/
+│       └── logo.png
 ├── media/
-└── static/
+│   ├── documents/
+│   └── uploads/
+├── requirements.txt
+├── README.md
+├── reset_db.sh
+├── reset_db.ps1
+├── run_reset.bat
+├── create_admin_user.py
+└── create_sample_data.py

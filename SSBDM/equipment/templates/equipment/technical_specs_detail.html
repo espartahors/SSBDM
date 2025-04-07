@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Technical Specification: {{ specs.specification }} - SSBDM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-clipboard-list"></i> {{ specs.specification }}</h1>
+        <p class="text-muted">
+            Equipment: <a href="{% url 'equipment:equipment_detail' specs.equipment.pk %}">{{ specs.equipment.name }}</a>
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <div class="btn-group">
+            <a href="{% url 'equipment:equipment_detail' specs.equipment.pk %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Equipment
+            </a>
+            <a href="{% url 'equipment:specs_edit' specs.pk %}" class="btn btn-outline-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="#" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Specification Details</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th style="width: 200px;">Specification</th>
+                            <td>{{ specs.specification }}</td>
+                        </tr>
+                        <tr>
+                            <th>Value</th>
+                            <td>{{ specs.value }} {{ specs.unit }}</td>
+                        </tr>
+                        <tr>
+                            <th>Last Updated</th>
+                            <td>{{ specs.last_updated }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Equipment Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th style="width: 120px;">Code</th>
+                            <td>{{ specs.equipment.code }}</td>
+                        </tr>
+                        <tr>
+                            <th>Name</th>
+                            <td>{{ specs.equipment.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Type</th>
+                            <td>{{ specs.equipment.get_equipment_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td>
+                                <span class="status-indicator status-{{ specs.equipment.status }}"></span>
+                                {{ specs.equipment.get_status_display }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <a href="{% url 'equipment:equipment_detail' specs.equipment.pk %}" class="btn btn-primary btn-sm w-100 mt-3">
+                    <i class="fas fa-cog"></i> View Equipment Details
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the specification <strong>{{ specs.specification }}</strong>?</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="{% url 'equipment:technical_specs_delete' specs.pk %}" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

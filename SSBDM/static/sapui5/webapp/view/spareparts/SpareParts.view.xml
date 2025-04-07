@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mvc:View
+    controllerName="ssbdm.controller.spareparts.SpareParts"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+    
+    <Page id="sparePartsPage" title="{i18n>sparePartsTitle}">
+        <customHeader>
+            <Toolbar>
+                <Button
+                    id="navBackButton"
+                    icon="sap-icon://nav-back"
+                    press=".onNavBack"
+                    tooltip="{i18n>back}" />
+                <Title text="{i18n>sparePartsTitle}" level="H2" />
+                <ToolbarSpacer />
+                <Button
+                    id="addSparePartButton"
+                    icon="sap-icon://add"
+                    text="{i18n>addSparePart}"
+                    type="Emphasized"
+                    press=".onCreatePress"
+                    visible="{= ${user>/role} === 'staff' || ${user>/role} === 'admin' }" />
+            </Toolbar>
+        </customHeader>
+        
+        <content>
+            <VBox>
+                <f:DynamicPage id="dynamicPageId" headerExpanded="{view>/headerExpanded}">
+                    <f:title>
+                        <f:DynamicPageTitle>
+                            <f:heading>
+                                <Title text="{i18n>sparePartsList}" />
+                            </f:heading>
+                            <f:actions>
+                                <Button
+                                    icon="sap-icon://filter"
+                                    tooltip="{i18n>filter}"
+                                    press=".onToggleFilterBar" />
+                                <Button
+                                    icon="sap-icon://refresh"
+                                    tooltip="{i18n>refresh}"
+                                    press=".onRefresh" />
+                            </f:actions>
+                        </f:DynamicPageTitle>
+                    </f:title>
+                    
+                    <f:header>
+                        <f:DynamicPageHeader pinnable="true">
+                            <FlexBox
+                                alignItems="Start"
+                                justifyContent="SpaceBetween"
+                                wrap="Wrap"
+                                class="sapUiSmallMarginTop">
+                                
+                                <VBox class="sapUiSmallMarginEnd">
+                                    <Label text="{i18n>sparePartCategory}" />
+                                    <ComboBox
+                                        id="categoryFilter"
+                                        items="{sparePartsCategoriesAPI>/results}"
+                                        change=".onCategoryFilterChange">
+                                        <core:Item key="{sparePartsCategoriesAPI>id}" text="{sparePartsCategoriesAPI>name}" />
+                                        <core:Item key="" text="{i18n>all}" />
+                                    </ComboBox>
+                                </VBox>
+                                
+                                <VBox class="sapUiSmallMarginEnd">
+                                    <Label text="{i18n>stockStatus}" />
+                                    <ComboBox
+                                        id="stockFilter"
+                                        change=".onStockFilterChange">
+                                        <core:Item key="" text="{i18n>all}" />
+                                        <core:Item key="normal" text="{i18n>normalStock}" />
+                                        <core:Item key="low" text="{i18n>lowStock}" />
+                                        <core:Item key="out" text="{i18n>outOfStock}" />
+                                    </ComboBox>
+                                </VBox>
+                                
+                                <VBox class="sapUiSmallMarginEnd">
+                                    <Label text="{i18n>search}" />
+                                    <SearchField
+                                        id="searchField"
+                                        width="300px"
+                                        search=".onSearch"
+                                        placeholder="{i18n>searchPlaceholder}" />
+                                </VBox>
+                                
+                                <VBox class="sapUiSmallMarginBegin">
+                                    <Button
+                                        text="{i18n>clearFilters}"
+                                        type="Transparent"
+                                        press=".onClearFilters" />
+                                </VBox>
+                            </FlexBox>
+                        </f:DynamicPageHeader>
+                    </f:header>
+                    
+                    <f:content>
+                        <Table
+                            id="sparePartsTable"
+                            items="{sparePartsAPI>/results}"
+                            growing="true"
+                            growingThreshold="20"
+                            growingScrollToLoad="true"
+                            mode="None"
+    <Page id="sparePartsPage" 
+          title="{i18n>sparePartsTitle}"
+          showNavButton="true"
+          navButtonPress=".onNavBack">
+        <headerContent>
+            <Button 
+                text="{i18n>createSparePart}" 
+                icon="sap-icon://add" 
+                type="Emphasized"
+                visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} }"
+                press=".onCreateSparePart" />
+        </headerContent>
+        
+        <f:DynamicPage id="dynamicPageId" headerExpanded="{view>/headerExpanded}">
+            <f:title>
+                <f:DynamicPageTitle>
+                    <f:heading>
+                        <Title text="{i18n>spareParts}" />
+                    </f:heading>
+                    <f:expandedContent>
+                        <Text text="{i18n>sparePartsDescription}" />
+                    </f:expandedContent>
+                    <f:actions>
+                        <OverflowToolbar>
+                            <Button 
+                                text="{i18n>transactions}"
+                                icon="sap-icon://unwrap" 
+                                type="Ghost"
+                                press=".onNavigateToTransactions" />
+                            <Button 
+                                icon="sap-icon://action-settings" 
+                                type="Transparent"
+                                tooltip="{i18n>toggleFilterBar}"
+                                press=".onToggleFilterBar" />
+                            <Button 
+                                icon="sap-icon://sort" 
+                                type="Transparent"
+                                tooltip="{i18n>sort}"
+                                press=".onOpenSortDialog" />
+                            <Button 
+                                icon="sap-icon://refresh" 
+                                type="Transparent"
+                                tooltip="{i18n>refresh}"
+                                press=".onRefresh" />
+                        </OverflowToolbar>
+                    </f:actions>
+                </f:DynamicPageTitle>
+            </f:title>
+            
+            <f:header>
+                <f:DynamicPageHeader pinnable="true">
+                    <VBox>
+                        <HBox alignItems="Center" justifyContent="SpaceBetween" class="sapUiSmallMarginBottom">
+                            <VBox>
+                                <Label text="{i18n>searchSpareParts}" />
+                                <SearchField
+                                    id="searchField"
+                                    width="100%"
+                                    search=".onSearch"
+                                    liveChange=".onSearchLiveChange" />
+                            </VBox>
+                            <VBox class="sapUiSmallMarginBegin">
+                                <Label text="{i18n>category}" />
+                                <ComboBox
+                                    id="categoryFilter"
+                                    items="{view>/categoryOptions}"
+                                    selectionChange=".onFilterChange"
+                                    selectedKey="">
+                                    <core:Item key="{view>key}" text="{view>text}" />
+                                </ComboBox>
+                            </VBox>
+                            <VBox class="sapUiSmallMarginBegin">
+                                <Label text="{i18n>stockStatus}" />
+                                <ComboBox
+                                    id="stockFilter"
+                                    items="{view>/stockOptions}"
+                                    selectionChange=".onFilterChange"
+                                    selectedKey="">
+                                    <core:Item key="{view>key}" text="{view>text}" />
+                                </ComboBox>
+                            </VBox>
+                            <VBox class="sapUiSmallMarginBegin">
+                                <Button
+                                    text="{i18n>resetFilters}"
+                                    type="Transparent"
+                                    press=".onResetFilters" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </f:DynamicPageHeader>
+            </f:header>
+            
+            <f:content>
+                <Table
+                    id="sparePartsTable"
+                    inset="false"
+                    items="{
+                        path: 'view>/spareParts',
+                        sorter: {
+                            path: 'name',
+                            descending: false
+                        }
+                    }"
+                    noDataText="{i18n>noSpareParts}"
+                    growing="true"
+                    growingScrollToLoad="true"
+                    updateFinished=".onUpdateFinished"
+                    busyIndicatorDelay="0"
+                    sticky="ColumnHeaders,HeaderToolbar"
+                    class="sapUiResponsiveMargin">
+                    <headerToolbar>
+                        <OverflowToolbar>
+                            <content>
+                                <ToolbarSpacer />
+                                <Text id="tableHeader" text="{i18n>sparePartsCount} ({view>/sparePartsCount})" />
+                            </content>
+                        </OverflowToolbar>
+                    </headerToolbar>
+                    <columns>
+                        <Column width="12rem">
+                            <Text text="{i18n>partNumber}" />
+                        </Column>
+                        <Column>
+                            <Text text="{i18n>name}" />
+                        </Column>
+                        <Column width="12rem">
+                            <Text text="{i18n>category}" />
+                        </Column>
+                        <Column width="8rem" hAlign="End">
+                            <Text text="{i18n>stockQuantity}" />
+                        </Column>
+                        <Column width="8rem" hAlign="End">
+                            <Text text="{i18n>minQuantity}" />
+                        </Column>
+                        <Column width="10rem" hAlign="End">
+                            <Text text="{i18n>unitPrice}" />
+                        </Column>
+                        <Column width="8rem">
+                            <Text text="{i18n>status}" />
+                        </Column>
+                        <Column width="8rem">
+                            <Text text="{i18n>actions}" />
+                        </Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem type="Navigation" press=".onSparePartPress">
+                            <cells>
+                                <Text text="{view>part_number}" />
+                                <Text text="{view>name}" />
+                                <Text text="{view>category_name}" />
+                                <ObjectNumber number="{view>stock_quantity}" />
+                                <ObjectNumber number="{view>min_stock_level}" />
+                                <ObjectNumber 
+                                    number="{
+                                        parts: [{path: 'view>unit_price'}],
+                                        formatter: '.formatter.formatCurrency'
+                                    }" 
+                                    unit="{view>currency}" />
+                                <ObjectStatus text="{view>status}" 
+                                    state="{= ${view>status} === 'in_stock' ? 'Success' : 
+                                            ${view>status} === 'low_stock' ? 'Warning' : 
+                                            ${view>status} === 'out_of_stock' ? 'Error' : 'None' }" />
+                                <HBox>
+                                    <Button 
+                                        icon="sap-icon://inventory" 
+                                        type="Transparent"
+                                        tooltip="{i18n>transaction}"
+                                        press=".onCreateTransaction" />
+                                    <Button 
+                                        icon="sap-icon://edit" 
+                                        type="Transparent"
+                                        tooltip="{i18n>edit}"
+                                        press=".onEditSparePart" 
+                                        visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} }" />
+                                    <Button 
+                                        icon="sap-icon://delete" 
+                                        type="Transparent"
+                                        tooltip="{i18n>delete}"
+                                        press=".onDeleteSparePart" 
+                                        visible="{= ${userInfo>/isStaff} || ${userInfo>/isAdmin} }" />
+                                </HBox>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </f:content>
+        </f:DynamicPage>
+    </Page>
+</mvc:View> 

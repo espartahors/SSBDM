@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Low Stock Items - SSBDM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h2 class="mb-3">Low Stock Items</h2>
+            <p class="text-muted">Parts that are below minimum stock levels</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'spare_parts:spare_part_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-list"></i> All Spare Parts
+            </a>
+            <a href="{% url 'spare_parts:stock_dashboard' %}" class="btn btn-outline-primary">
+                <i class="fas fa-chart-bar"></i> Stock Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <div class="row">
+                <div class="col-md-8">
+                    <form method="get" class="row g-3">
+                        <div class="col-auto">
+                            <input type="text" name="search" class="form-control" placeholder="Search..." value="{{ request.GET.search|default:'' }}">
+                        </div>
+                        <div class="col-auto">
+                            <select name="category" class="form-select">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"i" %}selected{% endif %}>{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-secondary">Filter</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">CSV</a></li>
+                            <li><a class="dropdown-item" href="#">Excel</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Part Number</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Current Stock</th>
+                            <th>Minimum Stock</th>
+                            <th>Shortage</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for part in spare_parts %}
+                        <tr class="{% if part.quantity_in_stock == 0 %}table-danger{% else %}table-warning{% endif %}">
+                            <td>{{ part.part_number }}</td>
+                            <td>{{ part.description }}</td>
+                            <td>{% if part.category %}{{ part.category.name }}{% else %}-{% endif %}</td>
+                            <td><strong>{{ part.quantity_in_stock }}</strong></td>
+                            <td>{{ part.minimum_stock }}</td>
+                            <td><strong>{{ part.shortage }}</strong></td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'spare_parts:spare_part_detail' part.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'spare_parts:transaction_add' %}?part={{ part.id }}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-plus"></i> Stock
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center p-3">
+                                <div class="alert alert-info mb-0">
+                                    No low stock items found. {% if request.GET.search or request.GET.category %}Try changing your filter criteria.{% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer d-flex justify-content-between align-items-center">
+            <span>Showing {{ spare_parts.count }} of {{ paginator.count }} low stock items</span>
+            
+            {% if is_paginated %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in paginator.page_range %}
+                        {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

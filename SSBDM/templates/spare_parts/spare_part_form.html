@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if form.instance.id %}Edit Spare Part{% else %}Add Spare Part{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        {% if form.instance.id %}
+                            Edit Spare Part: {{ form.instance.part_number }}
+                        {% else %}
+                            Add New Spare Part
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="form">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.part_number.id_for_label }}">Part Number</label>
+                                    {{ form.part_number }}
+                                    {% if form.part_number.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.part_number.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.location.id_for_label }}">Storage Location</label>
+                                    {{ form.location }}
+                                    {% if form.location.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.location.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.description.id_for_label }}">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.equipment.id_for_label }}">Equipment</label>
+                                    {{ form.equipment }}
+                                    {% if form.equipment.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.equipment.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Equipment this part belongs to</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.category.id_for_label }}">Category</label>
+                                    {{ form.category }}
+                                    {% if form.category.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.category.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.quantity_in_stock.id_for_label }}">Current Stock</label>
+                                    {{ form.quantity_in_stock }}
+                                    {% if form.quantity_in_stock.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.quantity_in_stock.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.minimum_stock.id_for_label }}">Minimum Stock</label>
+                                    {{ form.minimum_stock }}
+                                    {% if form.minimum_stock.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.minimum_stock.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Threshold for low stock alerts</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.cost.id_for_label }}">Unit Cost</label>
+                                    {{ form.cost }}
+                                    {% if form.cost.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.cost.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.supplier.id_for_label }}">Supplier</label>
+                            {{ form.supplier }}
+                            {% if form.supplier.errors %}
+                                <div class="invalid-feedback d-block">{{ form.supplier.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                {% if form.instance.id %}Save Changes{% else %}Add Spare Part{% endif %}
+                            </button>
+                            <a href="{% url 'spare_parts:spare_part_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

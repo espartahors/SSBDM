@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} - SSBDM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-file-alt"></i> {{ document.title }}</h1>
+        <p class="text-muted">
+            {% if document.document_type %}
+            <span class="badge bg-secondary">{{ document.get_document_type_display }}</span>
+            {% endif %}
+            Uploaded {{ document.upload_date|date:"F j, Y" }}
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <div class="btn-group">
+            <a href="{% url 'documents:document_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Documents
+            </a>
+            <a href="{% url 'documents:document_edit' document.pk %}" class="btn btn-outline-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'documents:document_delete' document.pk %}" class="btn btn-outline-danger">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Document Content -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Document Information</h5>
+            </div>
+            <div class="card-body">
+                {% if document.description %}
+                <div class="mb-4">
+                    <h6>Description</h6>
+                    <p>{{ document.description|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Related Equipment</h6>
+                        {% if document.equipment %}
+                            <a href="{% url 'equipment:equipment_detail' document.equipment.pk %}">
+                                {{ document.equipment.name }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">No equipment specified</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Category</h6>
+                        {% if document.category %}
+                            <a href="{% url 'documents:category_detail' document.category.pk %}">
+                                {{ document.category.name }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Uncategorized</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Document Type</h6>
+                        {% if document.document_type %}
+                            <span class="badge bg-secondary">{{ document.get_document_type_display }}</span>
+                        {% else %}
+                            <span class="text-muted">Not specified</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Uploaded By</h6>
+                        {% if document.uploaded_by %}
+                            {{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}
+                        {% else %}
+                            <span class="text-muted">Unknown</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Upload Date</h6>
+                        {{ document.upload_date|date:"F j, Y" }}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Version</h6>
+                        {% if document.version %}
+                            {{ document.version }}
+                        {% else %}
+                            <span class="text-muted">Not specified</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>File Type</h6>
+                        <span class="badge bg-info">{{ document.file.name|slice:"-3:" }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>File Size</h6>
+                        {{ document.file.size|filesizeformat }}
+                    </div>
+                </div>
+                
+                {% if document.tags %}
+                <div class="mb-3">
+                    <h6>Tags</h6>
+                    {% for tag in document.tags.split(',') %}
+                        <span class="badge bg-secondary">{{ tag.strip }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Document Preview -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Document Preview</h5>
+                <a href="{{ document.file.url }}" class="btn btn-primary btn-sm" download>
+                    <i class="fas fa-download"></i> Download
+                </a>
+            </div>
+            <div class="card-body p-0">
+                {% if document.file.name|slice:"-3:" == "pdf" %}
+                    <div class="ratio ratio-16x9">
+                        <iframe src="{{ document.file.url }}" title="{{ document.title }}" allowfullscreen></iframe>
+                    </div>
+                {% elif document.file.name|slice:"-3:" in "jpg,png,gif,jpeg" %}
+                    <img src="{{ document.file.url }}" class="img-fluid" alt="{{ document.title }}">
+                {% else %}
+                    <div class="text-center p-5">
+                        <i class="fas fa-file fa-4x mb-3 text-muted"></i>
+                        <p>Preview not available for this file type.</p>
+                        <a href="{{ document.file.url }}" class="btn btn-primary" download>
+                            <i class="fas fa-download"></i> Download File
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Related Documents -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Related Documents</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for related in related_documents %}
+                    <li class="list-group-item">
+                        <a href="{% url 'documents:document_detail' related.pk %}">
+                            <i class="fas fa-file me-2"></i> {{ related.title }}
+                        </a>
+                        <span class="d-block text-muted small">{{ related.upload_date|date:"M d, Y" }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center py-4">
+                        <span class="text-muted">No related documents found</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Document History -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Document History</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-upload me-2"></i> Uploaded</span>
+                            <span class="text-muted">{{ document.upload_date|date:"M d, Y" }}</span>
+                        </div>
+                        <small class="text-muted">by {{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}</small>
+                    </li>
+                    {% if document.last_updated %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-edit me-2"></i> Last Updated</span>
+                            <span class="text-muted">{{ document.last_updated|date:"M d, Y" }}</span>
+                        </div>
+                        <small class="text-muted">by {{ document.last_updated_by.get_full_name|default:document.last_updated_by.username }}</small>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

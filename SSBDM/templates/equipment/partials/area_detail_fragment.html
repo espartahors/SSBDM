@@ -1,0 +1,125 @@
+<div class="detail-panel">
+    <div class="detail-header d-flex justify-content-between align-items-center">
+        <h4 class="detail-title mb-0">
+            <i class="fas fa-map-marker-alt me-2"></i>{{ area.name }}
+        </h4>
+        <div class="detail-actions">
+            <a href="{% url 'equipment:area_update' area.id %}" class="btn btn-primary btn-icon">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'equipment:equipment_add' %}?area={{ area.id }}" class="btn btn-success btn-icon">
+                <i class="fas fa-plus"></i> Add Equipment
+            </a>
+        </div>
+    </div>
+    
+    <div class="detail-section">
+        <p class="text-muted">{{ area.description }}</p>
+        
+        <div class="detail-info-list">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="detail-info-item">
+                        <span class="detail-info-label">Location:</span>
+                        <span class="detail-info-value">{{ area.location|default:"Not specified" }}</span>
+                    </div>
+                    <div class="detail-info-item">
+                        <span class="detail-info-label">Area Code:</span>
+                        <span class="detail-info-value">{{ area.code|default:"Not assigned" }}</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    {% if area.parent %}
+                    <div class="detail-info-item">
+                        <span class="detail-info-label">Parent Area:</span>
+                        <span class="detail-info-value">
+                            <a href="{% url 'equipment:area_detail' area.parent.id %}">{{ area.parent.name }}</a>
+                        </span>
+                    </div>
+                    {% endif %}
+                    <div class="detail-info-item">
+                        <span class="detail-info-label">Total Equipment:</span>
+                        <span class="detail-info-value">{{ equipment_count|default:"0" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if equipment_list.exists %}
+    <div class="detail-section">
+        <h5 class="detail-section-title"><i class="fas fa-tools me-2"></i>Equipment in this Area</h5>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for equipment in equipment_list %}
+                    <tr>
+                        <td>{{ equipment.code }}</td>
+                        <td>{{ equipment.name }}</td>
+                        <td>{{ equipment.get_equipment_type_display }}</td>
+                        <td>
+                            {% if equipment.status == "operational" %}
+                                <span class="status-badge status-operational"><i class="fas fa-check-circle"></i> Operational</span>
+                            {% elif equipment.status == "maintenance" %}
+                                <span class="status-badge status-maintenance"><i class="fas fa-wrench"></i> Under Maintenance</span>
+                            {% elif equipment.status == "out_of_service" %}
+                                <span class="status-badge status-out-of-service"><i class="fas fa-exclamation-circle"></i> Out of Service</span>
+                            {% else %}
+                                <span class="status-badge"><i class="fas fa-info-circle"></i> {{ equipment.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'equipment:equipment_detail' equipment.id %}" class="btn-action" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="detail-section">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No equipment is assigned to this area yet.
+            <a href="{% url 'equipment:equipment_add' %}?area={{ area.id }}" class="alert-link">Add equipment now</a>.
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if child_areas.exists %}
+    <div class="detail-section">
+        <h5 class="detail-section-title"><i class="fas fa-sitemap me-2"></i>Sub-areas</h5>
+        <div class="list-group">
+            {% for subarea in child_areas %}
+            <a href="{% url 'equipment:area_detail' subarea.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-map-marker-alt me-2"></i>{{ subarea.name }}</span>
+                <span class="badge bg-primary rounded-pill">{{ subarea.equipment_set.count }} equipment</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="detail-section">
+        <div class="btn-group w-100">
+            <a href="{% url 'maintenance:log_list' %}?area={{ area.id }}" class="btn btn-primary btn-icon">
+                <i class="fas fa-clipboard-list"></i> Maintenance Logs
+            </a>
+            <a href="{% url 'equipment:area_add' %}?parent={{ area.id }}" class="btn btn-success btn-icon">
+                <i class="fas fa-plus"></i> Add Sub-area
+            </a>
+        </div>
+    </div>
+</div> 

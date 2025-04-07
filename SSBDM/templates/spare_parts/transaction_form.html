@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if form.instance.id %}Edit Transaction{% else %}Add Transaction{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        {% if form.instance.id %}
+                            Edit Transaction for {{ form.instance.spare_part }}
+                        {% else %}
+                            Add New Transaction
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="form">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.spare_part.id_for_label }}">Spare Part</label>
+                            {{ form.spare_part }}
+                            {% if form.spare_part.errors %}
+                                <div class="invalid-feedback d-block">{{ form.spare_part.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.transaction_type.id_for_label }}">Transaction Type</label>
+                            {{ form.transaction_type }}
+                            {% if form.transaction_type.errors %}
+                                <div class="invalid-feedback d-block">{{ form.transaction_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.quantity.id_for_label }}">Quantity</label>
+                            {{ form.quantity }}
+                            {% if form.quantity.errors %}
+                                <div class="invalid-feedback d-block">{{ form.quantity.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.notes.id_for_label }}">Notes</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="invalid-feedback d-block">{{ form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                {% if form.instance.id %}Save Changes{% else %}Add Transaction{% endif %}
+                            </button>
+                            <a href="{% url 'spare_parts:transaction_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

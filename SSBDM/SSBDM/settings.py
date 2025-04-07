@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-i+tu6&1l!0uc2oekagmp3foz1t39wi*p+dku#@ak9v^ehzab&4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["172.10.11.126","localhost"]
 
 
 # Application definition
@@ -38,11 +38,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'maintenance.apps.MaintenanceConfig',
+    'mptt',  # For tree structure
     'crispy_forms',
     'crispy_bootstrap5',
-    'mptt',  # For tree structure
+    'rest_framework',
+    # Core and new restructured apps
+    'core',
+    'equipment_new',
+    'maintenance_new',
+    'spare_parts_new',
+    # Legacy apps that are still needed
+    'documents',  # Still needed by ssbom
+    'ssbom',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +60,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Temporarily disable the maintenance middleware until we migrate it
+    # 'maintenance.middleware.SecurityMiddleware',
 ]
 
 
@@ -63,7 +72,7 @@ ROOT_URLCONF = 'SSBDM.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,6 +80,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.static',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -84,11 +95,14 @@ WSGI_APPLICATION = 'SSBDM.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ssbdm_db',
+        'USER': 'postgres',
+        'PASSWORD': 'ibaali3303',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -140,5 +154,21 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Login URLs
-LOGIN_REDIRECT_URL = 'maintenance:dashboard'
 LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'maintenance:dashboard'
+LOGOUT_REDIRECT_URL = 'login'
+
+# Development settings
+if DEBUG:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '172.10.11.126']
+else:
+    ALLOWED_HOSTS = ['production-domain.com']
+
+# Permission settings
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Session settings
+SESSION_COOKIE_AGE = 1800  # 30 minutes
+SESSION_SAVE_EVERY_REQUEST = True

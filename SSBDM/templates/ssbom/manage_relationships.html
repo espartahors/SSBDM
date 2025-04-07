@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Manage SSBOM Relationships - SSBDM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="dashboard-section-title">Manage SSBOM Relationships</div>
+    <div class="dashboard-section-subtitle">Define relationships between equipment, spare parts, and documents</div>
+    
+    <div class="row mt-4">
+        <!-- Left Column - Equipment -->
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Equipment</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="equipment-search" placeholder="Search equipment...">
+                    </div>
+                    <div class="equipment-list" style="max-height: 500px; overflow-y: auto;">
+                        <div class="list-group">
+                            {% for area in areas %}
+                            <div class="area-group mb-2">
+                                <div class="area-header fw-bold text-muted small mb-1">{{ area.name }}</div>
+                                {% for equipment in area.equipment_set.all %}
+                                <button type="button" class="list-group-item list-group-item-action equipment-item" 
+                                        data-id="{{ equipment.id }}" data-name="{{ equipment.name }}">
+                                    {{ equipment.name }}
+                                </button>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Middle Column - Relationship Form -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Define Relationship</h5>
+                </div>
+                <div class="card-body">
+                    <form id="relationship-form">
+                        <input type="hidden" id="equipment-id" name="equipment_id">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Selected Equipment</label>
+                            <div id="selected-equipment" class="form-control form-control-plaintext">
+                                Please select an equipment from the left panel
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Relationship Type</label>
+                            <select class="form-select" id="relationship-type" name="relationship_type">
+                                <option value="component">Component</option>
+                                <option value="assembly">Assembly</option>
+                                <option value="replacement">Replacement Part</option>
+                                <option value="consumable">Consumable</option>
+                                <option value="tool">Tool</option>
+                                <option value="documentation">Documentation</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Related Item Type</label>
+                            <select class="form-select" id="related-item-type" name="related_item_type">
+                                <option value="spare_part">Spare Part</option>
+                                <option value="document">Document</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3" id="spare-part-selection">
+                            <label class="form-label">Spare Part</label>
+                            <select class="form-select" id="spare-part-id" name="spare_part_id">
+                                <option value="">Select a spare part</option>
+                                {% for category in categories %}
+                                <optgroup label="{{ category.name }}">
+                                    {% for part in category.sparepart_set.all %}
+                                    <option value="{{ part.id }}">{{ part.name }} ({{ part.code }})</option>
+                                    {% endfor %}
+                                </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3" id="document-selection" style="display: none;">
+                            <label class="form-label">Document</label>
+                            <select class="form-select" id="document-id" name="document_id">
+                                <option value="">Select a document</option>
+                                {% for doc_type, label in document_types %}
+                                <optgroup label="{{ label }}">
+                                    {% for doc in documents %}
+                                    {% if doc.document_type == doc_type %}
+                                    <option value="{{ doc.id }}">{{ doc.title }}</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1">
+                            <div class="form-text">
+                                For documents, this is typically 1. For spare parts, specify how many are used.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" id="reset-form">Reset</button>
+                            <button type="submit" class="btn btn-primary" id="save-relationship">Add Relationship</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Existing Relationships -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Existing Relationships</h5>
+                </div>
+                <div class="card-body">
+                    <div id="equipment-relationships">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-sitemap"></i>
+                            </div>
+                            <p>Select an equipment to view its relationships</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Toggle between spare part and document selection
+        $('#related-item-type').change(function() {
+            if ($(this).val() === 'spare_part') {
+                $('#spare-part-selection').show();
+                $('#document-selection').hide();
+            } else {
+                $('#spare-part-selection').hide();
+                $('#document-selection').show();
+            }
+        });
+        
+        // Search equipment
+        $('#equipment-search').on('keyup', function() {
+            const searchText = $(this).val().toLowerCase();
+            $('.equipment-item').each(function() {
+                const equipmentName = $(this).data('name').toLowerCase();
+                if (equipmentName.includes(searchText)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+            
+            // Show/hide area headers based on visible equipment
+            $('.area-group').each(function() {
+                const visibleEquipment = $(this).find('.equipment-item:visible').length;
+                if (visibleEquipment === 0) {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            });
+        });
+        
+        // Select equipment
+        $('.equipment-item').click(function() {
+            $('.equipment-item').removeClass('active');
+            $(this).addClass('active');
+            
+            const equipmentId = $(this).data('id');
+            const equipmentName = $(this).data('name');
+            
+            $('#equipment-id').val(equipmentId);
+            $('#selected-equipment').text(equipmentName);
+            
+            // Load existing relationships
+            loadEquipmentRelationships(equipmentId);
+        });
+        
+        // Reset form
+        $('#reset-form').click(function() {
+            $('#relationship-form')[0].reset();
+            $('#selected-equipment').text('Please select an equipment from the left panel');
+            $('#equipment-id').val('');
+            $('.equipment-item').removeClass('active');
+            $('#equipment-relationships').html(`
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                    <p>Select an equipment to view its relationships</p>
+                </div>
+            `);
+        });
+        
+        // Submit form
+        $('#relationship-form').submit(function(e) {
+            e.preventDefault();
+            
+            const equipmentId = $('#equipment-id').val();
+            if (!equipmentId) {
+                alert('Please select an equipment first');
+                return;
+            }
+            
+            const relatedItemType = $('#related-item-type').val();
+            let relatedItemId;
+            
+            if (relatedItemType === 'spare_part') {
+                relatedItemId = $('#spare-part-id').val();
+                if (!relatedItemId) {
+                    alert('Please select a spare part');
+                    return;
+                }
+            } else {
+                relatedItemId = $('#document-id').val();
+                if (!relatedItemId) {
+                    alert('Please select a document');
+                    return;
+                }
+            }
+            
+            // Form data
+            const formData = {
+                equipment_id: equipmentId,
+                relationship_type: $('#relationship-type').val(),
+                quantity: $('#quantity').val(),
+                notes: $('#notes').val()
+            };
+            
+            if (relatedItemType === 'spare_part') {
+                formData.spare_part_id = relatedItemId;
+            } else {
+                formData.document_id = relatedItemId;
+            }
+            
+            // Submit via AJAX
+            $.ajax({
+                url: '{% url "ssbom:save_relationship" %}',
+                type: 'POST',
+                data: formData,
+                headers: {
+                    'X-CSRFToken': getCsrfToken()
+                },
+                success: function(response) {
+                    alert('Relationship saved successfully');
+                    loadEquipmentRelationships(equipmentId);
+                    
+                    // Clear selected item but keep equipment selected
+                    $('#spare-part-id').val('');
+                    $('#document-id').val('');
+                    $('#quantity').val('1');
+                    $('#notes').val('');
+                },
+                error: function(xhr) {
+                    alert('Error saving relationship: ' + xhr.responseText);
+                }
+            });
+        });
+        
+        // Load equipment relationships
+        function loadEquipmentRelationships(equipmentId) {
+            $.ajax({
+                url: '{% url "ssbom:get_equipment_relationships" %}',
+                data: { equipment_id: equipmentId },
+                success: function(data) {
+                    if (data.relationships.length === 0) {
+                        $('#equipment-relationships').html(`
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-sitemap"></i>
+                                </div>
+                                <p>No relationships defined yet</p>
+                            </div>
+                        `);
+                        return;
+                    }
+                    
+                    let html = '<ul class="list-group">';
+                    
+                    // Group by type
+                    const spareParts = data.relationships.filter(r => r.spare_part);
+                    const documents = data.relationships.filter(r => r.document);
+                    
+                    if (spareParts.length > 0) {
+                        html += '<li class="list-group-item list-group-item-secondary">Spare Parts</li>';
+                        
+                        spareParts.forEach(function(rel) {
+                            html += `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="badge bg-primary me-1">${rel.relationship_type_display}</span>
+                                        ${rel.spare_part_name}
+                                    </div>
+                                    <div class="d-flex">
+                                        <span class="badge bg-secondary me-2">Qty: ${rel.quantity}</span>
+                                        <button class="btn btn-sm btn-danger delete-relationship" 
+                                                data-id="${rel.id}" data-toggle="tooltip" 
+                                                title="Delete relationship">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </li>
+                            `;
+                        });
+                    }
+                    
+                    if (documents.length > 0) {
+                        html += '<li class="list-group-item list-group-item-secondary">Documents</li>';
+                        
+                        documents.forEach(function(rel) {
+                            html += `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="badge bg-info me-1">${rel.relationship_type_display}</span>
+                                        ${rel.document_title}
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-danger delete-relationship" 
+                                                data-id="${rel.id}" data-toggle="tooltip" 
+                                                title="Delete relationship">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </li>
+                            `;
+                        });
+                    }
+                    
+                    html += '</ul>';
+                    $('#equipment-relationships').html(html);
+                    
+                    // Set up delete buttons
+                    $('.delete-relationship').click(function() {
+                        const relationshipId = $(this).data('id');
+                        if (confirm('Are you sure you want to delete this relationship?')) {
+                            deleteRelationship(relationshipId, equipmentId);
+                        }
+                    });
+                },
+                error: function() {
+                    $('#equipment-relationships').html(`
+                        <div class="alert alert-danger">
+                            Error loading relationships. Please try again.
+                        </div>
+                    `);
+                }
+            });
+        }
+        
+        // Delete relationship
+        function deleteRelationship(relationshipId, equipmentId) {
+            $.ajax({
+                url: '{% url "ssbom:delete_relationship" %}',
+                type: 'POST',
+                data: { relationship_id: relationshipId },
+                headers: {
+                    'X-CSRFToken': getCsrfToken()
+                },
+                success: function() {
+                    loadEquipmentRelationships(equipmentId);
+                },
+                error: function() {
+                    alert('Error deleting relationship. Please try again.');
+                }
+            });
+        }
+        
+        // Get CSRF token
+        function getCsrfToken() {
+            return $('[name="csrfmiddlewaretoken"]').val() || document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        }
+    });
+</script>
+{% endblock %} 

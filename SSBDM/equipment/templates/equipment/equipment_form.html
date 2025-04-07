@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Edit Equipment: {{ form.instance.name }}{% else %}Add New Equipment{% endif %} - SSBDM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1>
+            <i class="fas fa-cog"></i> 
+            {% if form.instance.pk %}Edit Equipment: {{ form.instance.name }}{% else %}Add New Equipment{% endif %}
+        </h1>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{% url 'equipment:equipment_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Equipment
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Equipment Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" class="form">
+                    {% csrf_token %}
+                    
+                    <h6 class="mb-3">Basic Information</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.code|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.name|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.equipment_type|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.status|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.area|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.parent|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3 mt-4">Manufacturer Information</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.manufacturer|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.model|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.serial_number|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.installation_date|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3 mt-4">Additional Information</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            {{ form.description|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'equipment:equipment_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Equipment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Equipment Information</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    <i class="fas fa-info-circle me-2"></i> Complete all required fields to register this equipment in the system.
+                </p>
+                <hr>
+                <div class="mb-3">
+                    <h6>Equipment Code</h6>
+                    <p class="small text-muted">A unique identifier for this equipment. Use a consistent coding system.</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Equipment Name</h6>
+                    <p class="small text-muted">A descriptive name that clearly identifies this equipment.</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Equipment Type</h6>
+                    <p class="small text-muted">The category that best describes this equipment.</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Parent Equipment</h6>
+                    <p class="small text-muted">If this is a component of another equipment, select the parent equipment.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">After Saving</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">After saving this equipment, you can:</p>
+                <ul class="text-muted">
+                    <li>Add technical specifications</li>
+                    <li>Upload related documents</li>
+                    <li>Associate spare parts</li>
+                    <li>Schedule maintenance tasks</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

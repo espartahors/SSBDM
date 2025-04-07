@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Transaction{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title m-0">Confirm Delete</h5>
+                </div>
+                <div class="card-body">
+                    <p class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Are you sure you want to delete this transaction?
+                    </p>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Transaction ID</div>
+                                <div class="col-md-8">{{ transaction.id }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Date</div>
+                                <div class="col-md-8">{{ transaction.date|date:"Y-m-d H:i" }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Type</div>
+                                <div class="col-md-8">
+                                    {% if transaction.transaction_type == 'in' %}
+                                        <span class="badge bg-success">Stock In</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Stock Out</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Spare Part</div>
+                                <div class="col-md-8">{{ transaction.spare_part.part_number }} - {{ transaction.spare_part.description }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 text-muted">Quantity</div>
+                                <div class="col-md-8">{{ transaction.quantity }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <p><strong>Warning:</strong> Deleting this transaction will not automatically adjust the current stock level. 
+                        You may need to manually update the stock quantity after deletion.</p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'spare_parts:transaction_detail' transaction.id %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Confirm Delete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
